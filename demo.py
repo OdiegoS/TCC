@@ -8,7 +8,7 @@ from PIL import ImageTk
  
 class teste_tk(tkinter.Frame):
 
-    def __init__(self,parent = None):
+    def __init__(self,parent):
         tkinter.Frame.__init__(self,parent)
         
         self.parent = parent
@@ -39,7 +39,7 @@ class teste_tk(tkinter.Frame):
 
         self.top.config(menu=self.menuBar)
         ######################################
-        
+
         self.fMain = tkinter.Frame(self.parent)
         #self.fMain.pack(side = 'top')
         self.fMain.grid(row=0, column = 0, stick='nswe')
