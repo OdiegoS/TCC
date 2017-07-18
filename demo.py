@@ -2,7 +2,8 @@
 
 import tkinter
 from tkinter import messagebox
-from PIL import Image, ImageTk
+from PIL import Image
+from PIL import ImageTk
 
  
 class teste_tk(tkinter.Frame):
