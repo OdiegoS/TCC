@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*
+
 import tkinter
 from tkinter import messagebox
 from PIL import Image, ImageTk
