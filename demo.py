@@ -3,6 +3,7 @@
 import tkinter
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter.colorchooser import *
 from PIL import Image
 from PIL import ImageTk
 import os
@@ -105,16 +106,22 @@ class teste_tk(tkinter.Frame):
 
         #################################
         color_code = '#%02x%02x%02x'
-        est_label = [ ["Comment_1",[color_code  %(139, 137, 137) ]],
-                      ["Comment_2",[color_code  %(255, 239, 213) ]],
-                      ["Comment_3",[color_code  %(240, 255, 240) ]],
-                      ["Comment_4",[color_code  %(112, 138, 144) ]],
-                      ["Comment_5",[color_code  %(123, 104, 238) ]],
-                      ["Comment_6",[color_code  %(000, 191, 255) ]],
-                      ["Comment_7",[color_code  %(000, 255, 255) ]],
-                      ["Comment_8",[color_code  %(255, 20, 147) ]],
-                      ["Comment_9",[color_code  %(173, 255, 47) ]],
-                      ["Comment_10",[color_code  %(255, 165, 000) ]] ]
+        est_color = [ [color_code  %(139, 137, 137) ],
+                      [color_code  %(255, 239, 213) ],
+                      [color_code  %(240, 255, 240) ],
+                      [color_code  %(112, 138, 144) ],
+                      [color_code  %(123, 104, 238) ],
+                      [color_code  %(000, 191, 255) ],
+                      [color_code  %(000, 255, 255) ],
+                      [color_code  %(255, 20, 147)  ],
+                      [color_code  %(173, 255, 47)  ],
+                      [color_code  %(255, 165, 000) ] ]
+        lb_comment = []
+        for i in range(10):
+            lb_comment.append(tkinter.StringVar())
+            lb_comment[i].set("Comment_%d" %(i+1) )
+
+        
         self.label = [ [ [],[],[] ] for i in range(10)]
         self.lbSelect = -1
         self.labelTitle = []
@@ -131,18 +138,16 @@ class teste_tk(tkinter.Frame):
             self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
             self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
-            #v = tkinter.StringVar()
-            #self.label[i][1] = tkinter.Entry(self.fLabel, textvariable=v)
-            #v.set(est_label[i][0])
-            #self.label[i][1].bind("<Return>", self.lostFocus)
+            
+            self.label[i][1] = tkinter.Entry(self.fLabel, textvariable=lb_comment[i])
+            self.label[i][1].bind("<Return>", self.lostFocus)
             #self.label[i][1].bind("<Enter>", self.lostFocus)
 
             #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
-            
-            #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
             self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
-            self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=est_label[i][1], command=self.changeColor)
+            self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=est_color[i])
+            self.label[i][2]['command'] = lambda btn = self.label[i][2]: self.changeColor(btn)
             self.label[i][2].grid(row=i+1, column = 2, ipady=5)
 
             
@@ -153,8 +158,13 @@ class teste_tk(tkinter.Frame):
     def lostFocus(self, event):
         self.fLabel.focus()
 
-    def changeColor(self):
-        print("Mudando de cor")
+    def changeColor(self, btn):
+        color = askcolor() 
+
+        if(color[1] == None):
+            return
+            
+        btn.configure(bg=color[1])
 
     def selectLb(self, event):
         if(event.keysym[0] == 'K'):
