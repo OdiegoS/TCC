@@ -29,7 +29,8 @@ class teste_tk(tkinter.Frame):
         mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
         mnuArquivo.add_command(label="Abrir Imagem", command=self.abrir)
         mnuArquivo.add_command(label="Abrir Diretorio", command=self.abrirBatch)
-        mnuArquivo.add_command(label="Salvar", command=self.nada)
+        mnuArquivo.add_command(label="Save Annotation ", command=self.nada)
+        mnuArquivo.add_command(label="Save Comments", command=self.nada)
         mnuArquivo.add_separator()
         mnuArquivo.add_command(label="Sair", command=self.sair)
         self.menuBar.add_cascade(label="Arquivo", menu=mnuArquivo)
@@ -104,33 +105,41 @@ class teste_tk(tkinter.Frame):
 
         #################################
         color_code = '#%02x%02x%02x'
-        est_label = [ ["Label_0",[color_code  %(139, 137, 137) ]],
-                      ["Label_1",[color_code  %(255, 239, 213) ]],
-                      ["Label_2",[color_code  %(240, 255, 240) ]],
-                      ["Label_3",[color_code  %(112, 138, 144) ]],
-                      ["Label_4",[color_code  %(123, 104, 238) ]],
-                      ["Label_5",[color_code  %(000, 191, 255) ]],
-                      ["Label_6",[color_code  %(000, 255, 255) ]],
-                      ["Label_7",[color_code  %(255, 20, 147) ]],
-                      ["Label_8",[color_code  %(173, 255, 47) ]],
-                      ["Label_9",[color_code  %(255, 165, 000) ]] ]
+        est_label = [ ["Comment_1",[color_code  %(139, 137, 137) ]],
+                      ["Comment_2",[color_code  %(255, 239, 213) ]],
+                      ["Comment_3",[color_code  %(240, 255, 240) ]],
+                      ["Comment_4",[color_code  %(112, 138, 144) ]],
+                      ["Comment_5",[color_code  %(123, 104, 238) ]],
+                      ["Comment_6",[color_code  %(000, 191, 255) ]],
+                      ["Comment_7",[color_code  %(000, 255, 255) ]],
+                      ["Comment_8",[color_code  %(255, 20, 147) ]],
+                      ["Comment_9",[color_code  %(173, 255, 47) ]],
+                      ["Comment_10",[color_code  %(255, 165, 000) ]] ]
         self.label = [ [ [],[],[] ] for i in range(10)]
         self.lbSelect = -1
         self.labelTitle = []
 
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Atalho", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Rotulo", relief='raised', padx=3))
         self.labelTitle[0].grid(row=0, column = 0, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Nome", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comment", relief='raised', padx=3))
         self.labelTitle[1].grid(row=0, column = 1, ipady=10)
         self.labelTitle.append(tkinter.Label(self.fLabel, text="Cor", relief='raised', padx=3))
         self.labelTitle[2].grid(row=0, column = 2, ipady=10)
 
         for i in range(10):
  
-            self.label[i][0] = tkinter.Label(self.fLabel, text="#%d" %i, padx=3)
+            self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
             self.label[i][0].grid(row=i+1, column = 0, ipady=5)
+
+            #v = tkinter.StringVar()
+            #self.label[i][1] = tkinter.Entry(self.fLabel, textvariable=v)
+            #v.set(est_label[i][0])
+            #self.label[i][1].bind("<Return>", self.lostFocus)
+            #self.label[i][1].bind("<Enter>", self.lostFocus)
+
+            #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
             
-            self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
+            #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
             self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
             self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=est_label[i][1], command=self.changeColor)
@@ -139,12 +148,22 @@ class teste_tk(tkinter.Frame):
             
         for i in range(10):
             self.parent.bind(str(i), self.selectLb)
+            self.parent.bind("<KP_" + str(i) + ">", self.selectLb)
                       
+    def lostFocus(self, event):
+        self.fLabel.focus()
+
     def changeColor(self):
         print("Mudando de cor")
 
     def selectLb(self, event):
-        key = int(event.keysym)
+        if(event.keysym[0] == 'K'):
+            key = int(event.keysym.split('_')[1]) - 1
+        else:
+            key = int(event.keysym) - 1
+
+        if(key == -1):
+            key = 9
         #print("Selecionado Label #%d" %(key) )
     
         if( (self.lbSelect > -1) and (self.lbSelect != key) ):
@@ -167,23 +186,38 @@ class teste_tk(tkinter.Frame):
                                                             #("All Files", "*.*") ) )
         #print(filedir)
         self.image = [(ImageTk.PhotoImage(Image.open(filedir)))]
+        self.currImg = 0
 
         self.refresh()
         
         
     def abrirBatch(self):
-        dirname = filedialog.askdirectory(initialdir="/")
+        dirname = filedialog.askdirectory()
         #print(dirname)
 
+        limpar = 1
+
         images_ext = [".jpg",".gif",".png",".tiff"]
-        for filename in os.listdir(dirname):
+
+        listFiles = os.listdir(dirname)
+        listFiles.sort()
+        #print(listFiles)
+        for filename in listFiles:
+            
             ext = os.path.splitext(filename)[1]
             if ext.lower() not in images_ext:
                 continue
+            
+            if(limpar == 1):
+                self.image = []
+                self.currImg = 0
+                limpar = 0
             self.image.append(ImageTk.PhotoImage(Image.open(dirname + "/" + filename)))
-        if(len(self.image) > 0):
-            #print(len(self.image))
-            self.refresh()
+            print(filename)
+
+            if ( (len(self.image) > 0) and (limpar == 0) ):
+                #print(len(self.image))
+                self.refresh()
 
     def refresh(self):
         self.canvas.config(width=self.image[ self.currImg ].width(), height=self.image[ self.currImg ].height())
@@ -204,7 +238,8 @@ class teste_tk(tkinter.Frame):
         ans = tkinter.messagebox.askquestion("Quit", "Você tem certeza?", icon='warning')
 
         if ans == 'yes':
-            self.destroy()
+            #self.destroy()
+            self.parent.destroy()
 
     def onClick(self, event):
         print ("%d, %d" %(event.x, event.y) )
