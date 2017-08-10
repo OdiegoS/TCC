@@ -9,7 +9,7 @@ from PIL import ImageTk
 import os
 import glob
  
-class teste_tk(tkinter.Frame):
+class win_main(tkinter.Frame):
 
     def __init__(self,parent):
         tkinter.Frame.__init__(self,parent)
@@ -22,8 +22,22 @@ class teste_tk(tkinter.Frame):
 
     def initialize(self):
 
-        #############################################
         #criando menu
+        self.createMenu()
+
+        #Frame principal (onde aparece a imagem)
+        self.frameMain()
+
+        #Frame de status
+        self.frameStatus()
+
+        #Frame Label
+        self.frameLabel()
+
+        #Apenas Key Binds
+        self.addBind()
+
+    def createMenu(self):
         self.top = self.winfo_toplevel()
         self.menuBar = tkinter.Menu(self.top)
          
@@ -46,63 +60,30 @@ class teste_tk(tkinter.Frame):
         self.menuBar.add_cascade(label="Help", menu=mnuAjuda)
 
         self.top.config(menu=self.menuBar)
-        ######################################
 
+    def frameMain(self):
         self.fMain = tkinter.Frame(self.parent)
-        #self.fMain.pack(side = 'top')
         #self.fMain.grid(row=0, column = 0, stick='nw')
         self.fMain.grid(row=0, column = 0)
-        #self.fMain.rowconfigure(1, weight=1)
-        #self.fMain.columnconfigure(1, weight=1)
 
-        self.fLabel = tkinter.Frame(self.parent, bg="green")
-        #self.fLabel.pack(side = "right", fill = 'y')
-        self.fLabel.grid(row = 0, column = 1, stick='nswe', ipadx=5, )
-        #self.fLabel.rowconfigure(1, weight=1)
-        #self.fLabel.columnconfigure(1, weight=1)
-
-        self.fStatus = tkinter.Frame(self.parent)
-        #self.fStatus.pack(side='bottom', fill='x')
-        self.fStatus.grid(row = 1, column = 0, stick='nswe', columnspan=2)
-        #self.fStatus.rowconfigure(1, weight=1)
-        #self.fStatus.columnconfigure(1, weight=1)
-
-        #imagem grande demais cobre o status (TODO: procurar como impedir)
-        self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
-        self.status.pack(side='bottom', fill='x')
-
-        #img = Image.open("demo_image2.jpg")
-        #self.photo = ImageTk.PhotoImage(img)
-        
-        #self.canvas = tkinter.Canvas(self.fMain, width=self.photo.width(), height=self.photo.height())
         self.canvas = tkinter.Canvas(self.fMain, width=998, height=665, highlightthickness=0)
         self.canvas.config(bg="yellow")
-        #self.canvas.image = self.photo
-        
 
-        #######
         #998x665
-        #1001x668
-        
-        #Somar 2 se qt pixel for par e somar 1 se qt de pixel for impar, pq?
+        #Somar 2 se qt pixel for par e somar 1 se qt de pixel for impar?
         #self.canvas.create_image(self.photo.width()/2+2, self.photo.height()/2+1, image=self.photo, tags="imgTag")
-        #self.canvas.pack()
         self.canvas.pack(fill='both', expand=True)
-        self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
-        self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
-
-        self.parent.bind("<Left>", self.moveImg)
-        self.parent.bind("<Right>", self.moveImg)
-
-        self.parent.bind("<MouseWheel>", self.moveImg)
-        #print(self.canvas.bbox("imgTag"))
         
-        #self.img = tkinter.Label(self.fMain, image=self.photo)
-        #self.img.image = self.photo
-        #self.img.pack()
-        #self.img.bind("<Button-1>", self.onClick)
-        #self.img.bind("<Motion>", self.motion)
-
+    def frameStatus(self):
+        self.fStatus = tkinter.Frame(self.parent)
+        self.fStatus.grid(row = 1, column = 0, stick='nswe', columnspan=2)
+        
+        self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
+        self.status.pack(side='bottom', fill='x')
+        
+    def frameLabel(self):
+        self.fLabel = tkinter.Frame(self.parent, bg="green")
+        self.fLabel.grid(row = 0, column = 1, stick='nswe', ipadx=5, )
 
         #################################
         color_code = '#%02x%02x%02x'
@@ -138,7 +119,6 @@ class teste_tk(tkinter.Frame):
             self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
             self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
-            
             self.label[i][1] = tkinter.Entry(self.fLabel, textvariable=lb_comment[i])
             self.label[i][1].bind("<Return>", self.lostFocus)
             #self.label[i][1].bind("<Enter>", self.lostFocus)
@@ -150,13 +130,26 @@ class teste_tk(tkinter.Frame):
             self.label[i][2]['command'] = lambda btn = self.label[i][2]: self.changeColor(btn)
             self.label[i][2].grid(row=i+1, column = 2, ipady=5)
 
-            
+    def addBind(self):
+        ##########
+        #Image Bind
+        self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
+        self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
+
+        self.parent.bind("<Left>", self.moveImg)
+        self.parent.bind("<Right>", self.moveImg)
+
+        self.parent.bind("<MouseWheel>", self.moveImg) #Windows
+        self.parent.bind("<Button-4>", self.moveImg) #Linux
+        self.parent.bind("<Button-5>", self.moveImg) #Linux
+        #print(self.canvas.bbox("imgTag"))
+        ##########
+
+        #Label Bind
         for i in range(10):
             self.parent.bind(str(i), self.selectLb)
-            self.parent.bind("<KP_" + str(i) + ">", self.selectLb)
-                      
-    def lostFocus(self, event):
-        self.fLabel.focus()
+            self.parent.bind("<KP_" + str(i) + ">", self.selectLb) #Linux - Numpad
+
 
     def changeColor(self, btn):
         color = askcolor() 
@@ -166,27 +159,20 @@ class teste_tk(tkinter.Frame):
             
         btn.configure(bg=color[1])
 
-    def selectLb(self, event):
-        if(event.keysym[0] == 'K'):
-            key = int(event.keysym.split('_')[1]) - 1
-        else:
-            key = int(event.keysym) - 1
+    def refresh(self):
+        self.canvas.config(width=self.image[ self.currImg ].width(), height=self.image[ self.currImg ].height())
+        self.canvas.image = self.image[ self.currImg ]
 
-        if(key == -1):
-            key = 9
-        #print("Selecionado Label #%d" %(key) )
-    
-        if( (self.lbSelect > -1) and (self.lbSelect != key) ):
-            self.label[self.lbSelect][0].configure(relief='flat')
-            self.label[self.lbSelect][1].configure(relief='flat')
-            self.label[self.lbSelect][2].configure(relief='flat')
-            
-            
-        self.label[key][0].configure(relief='solid')
-        self.label[key][1].configure(relief='solid')
-        self.label[key][2].configure(relief='solid')
+        self.canvas.create_image(self.image[ self.currImg ].width()/2+2, self.image[ self.currImg ].height()/2+1, image=self.image[ self.currImg ], tags="imgTag")
+        self.canvas.pack(fill='both', expand=True)
 
-        self.lbSelect = key
+        self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d" %(self.currImg+1, len(self.image) )))
+
+        self.parent.title("Teste (%s)" %self.files[self.currImg])
+        
+#########################################################################
+#            Menu Bar Functions
+#########################################################################
 
     def abrir(self):
         filedir = filedialog.askopenfilename(filetypes = ( ("Jpeg Images", "*.jpg"),
@@ -195,6 +181,7 @@ class teste_tk(tkinter.Frame):
                                                            ("Tiff Images",".*tiff") ) )
                                                             #("All Files", "*.*") ) )
         #print(filedir)
+        self.files = [filedir]
         self.image = [(ImageTk.PhotoImage(Image.open(filedir)))]
         self.currImg = 0
 
@@ -219,24 +206,17 @@ class teste_tk(tkinter.Frame):
                 continue
             
             if(limpar == 1):
+                self.files = []
                 self.image = []
                 self.currImg = 0
                 limpar = 0
             self.image.append(ImageTk.PhotoImage(Image.open(dirname + "/" + filename)))
-            print(filename)
+            self.files.append(dirname + "/" + filename)
+            #print(filename)
 
             if ( (len(self.image) > 0) and (limpar == 0) ):
                 #print(len(self.image))
                 self.refresh()
-
-    def refresh(self):
-        self.canvas.config(width=self.image[ self.currImg ].width(), height=self.image[ self.currImg ].height())
-        self.canvas.image = self.image[ self.currImg ]
-
-        self.canvas.create_image(self.image[ self.currImg ].width()/2+2, self.image[ self.currImg ].height()/2+1, image=self.image[ self.currImg ], tags="imgTag")
-        self.canvas.pack(fill='both', expand=True)
-
-        self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d" %(self.currImg+1, len(self.image) )))
 
     def nada(self):
         pass
@@ -251,6 +231,35 @@ class teste_tk(tkinter.Frame):
             #self.destroy()
             self.parent.destroy()
 
+        
+#########################################################################
+#            Binds Functions
+#########################################################################
+    def lostFocus(self, event):
+        self.fLabel.focus()
+
+    def selectLb(self, event):
+        if(event.keysym[0] == 'K'):
+            key = int(event.keysym.split('_')[1]) - 1
+        else:
+            key = int(event.keysym) - 1
+
+        if(key == -1):
+            key = 9
+        #print("Selecionado Label #%d" %(key) )
+    
+        if( (self.lbSelect > -1) and (self.lbSelect != key) ):
+            self.label[self.lbSelect][0].configure(relief='flat')
+            self.label[self.lbSelect][1].configure(relief='flat')
+            self.label[self.lbSelect][2].configure(relief='flat')
+            
+            
+        self.label[key][0].configure(relief='solid')
+        self.label[key][1].configure(relief='solid')
+        self.label[key][2].configure(relief='solid')
+
+        self.lbSelect = key
+        
     def onClick(self, event):
         print ("%d, %d" %(event.x, event.y) )
 
@@ -262,11 +271,11 @@ class teste_tk(tkinter.Frame):
         #print(self.currImg)
         #print(event)
         change = 0
-        if (event.keysym == "Left") or (event.delta < 0):
+        if (event.keysym == "Left") or (event.delta < 0) or (event.num == 5):
             if(self.currImg > 0):
                 self.currImg = self.currImg - 1
                 change = 1
-        if (event.keysym == "Right") or (event.delta > 0):
+        if (event.keysym == "Right") or (event.delta > 0) or (event.num == 4):
             if self.currImg < len(self.image)-1:
                 self.currImg = self.currImg + 1
                 change = 1
@@ -274,6 +283,8 @@ class teste_tk(tkinter.Frame):
         if change == 1:
             self.refresh()
 
+#########################################################################
+#########################################################################
 if __name__ == "__main__":
     root = tkinter.Tk()
     root.rowconfigure(0, weight=1)
@@ -283,5 +294,5 @@ if __name__ == "__main__":
     #root.geometry('1000x700') #ativado para testes
     #root.resizable(width=False, height=False)
     
-    app = teste_tk(root)
+    app = win_main(root)
     app.mainloop()
