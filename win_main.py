@@ -8,6 +8,7 @@ from PIL import Image
 from PIL import ImageTk
 import os
 import glob
+from tkinter.simpledialog import SimpleDialog
  
 class win_main(tkinter.Frame):
 
@@ -17,10 +18,26 @@ class win_main(tkinter.Frame):
         self.parent = parent
         self.image = []
         self.currImg = 0
+        self.loadComment = None
+
+        self.dirImage = "/"
+        self.dirStack = "/"
+        self.dirLoadComments = "/"
+        self.dirSaveComments = "/"
+        self.dirLoadAnnotations = "/"
+        self.dirSaveAnnotations = "/"
+
+        if (not os.path.isfile("settings") ):
+            file = open("settings","w")
+            file.close
+            self.saveSettings()
         
         self.initialize()
 
     def initialize(self):
+
+        #carregando settings
+        self.loadSettings()
 
         #criando menu
         self.createMenu()
@@ -37,18 +54,42 @@ class win_main(tkinter.Frame):
         #Apenas Key Binds
         self.addBind()
 
+    def loadSettings(self):
+        file = open("settings","r")
+
+        lines = file.read().splitlines()
+
+        self.dirImage = lines[0]
+        self.dirStack = lines[1]
+        self.dirLoadComments = lines[2]
+        self.dirSaveComments = lines[3]
+        self.dirLoadAnnotations = lines[4]
+        self.dirSaveAnnotations = lines[5]
+
+    def saveSettings(self):
+        file = open("settings","w")
+
+        file.write(self.dirImage + "\n")
+        file.write(self.dirStack + "\n")
+        file.write(self.dirLoadComments + "\n")
+        file.write(self.dirSaveComments + "\n")
+        file.write(self.dirLoadAnnotations + "\n")
+        file.write(self.dirSaveAnnotations + "\n")
+
     def createMenu(self):
         self.top = self.winfo_toplevel()
         self.menuBar = tkinter.Menu(self.top)
          
-        mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
-        mnuArquivo.add_command(label="Abrir Imagem", command=self.abrir)
-        mnuArquivo.add_command(label="Abrir Diretorio", command=self.abrirBatch)
-        mnuArquivo.add_command(label="Save Annotation ", command=self.nada)
-        mnuArquivo.add_command(label="Save Comments", command=self.nada)
-        mnuArquivo.add_separator()
-        mnuArquivo.add_command(label="Sair", command=self.sair)
-        self.menuBar.add_cascade(label="Arquivo", menu=mnuArquivo)
+        self.mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
+        self.mnuArquivo.add_command(label="Open Image", command=self.abrir)
+        self.mnuArquivo.add_command(label="Open Directory", command=self.abrirBatch)
+        self.mnuArquivo.add_command(label="Save Annotation ", command=self.nada)
+        self.mnuArquivo.add_command(label="Save Comments", state = "disabled", command=self.saveComments)
+        self.mnuArquivo.add_command(label="Save Comments As", command=self.saveCommentsAs)
+        self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
+        self.mnuArquivo.add_separator()
+        self.mnuArquivo.add_command(label="Quit", command=self.sair)
+        self.menuBar.add_cascade(label="File", menu=self.mnuArquivo)
  
         mnuTeste = tkinter.Menu(self.menuBar, tearoff=0)
         mnuTeste.add_command(label="Blabla", command=self.nada)
@@ -82,53 +123,120 @@ class win_main(tkinter.Frame):
         self.status.pack(side='bottom', fill='x')
         
     def frameLabel(self):
-        self.fLabel = tkinter.Frame(self.parent, bg="green")
-        self.fLabel.grid(row = 0, column = 1, stick='nswe', ipadx=5, )
-
-        #################################
-        color_code = '#%02x%02x%02x'
-        est_color = [ [color_code  %(139, 137, 137) ],
-                      [color_code  %(255, 239, 213) ],
-                      [color_code  %(240, 255, 240) ],
-                      [color_code  %(112, 138, 144) ],
-                      [color_code  %(123, 104, 238) ],
-                      [color_code  %(000, 191, 255) ],
-                      [color_code  %(000, 255, 255) ],
-                      [color_code  %(255, 20, 147)  ],
-                      [color_code  %(173, 255, 47)  ],
-                      [color_code  %(255, 165, 000) ] ]
-        lb_comment = []
-        for i in range(10):
-            lb_comment.append(tkinter.StringVar())
-            lb_comment[i].set("Comment_%d" %(i+1) )
-
+        self.frameLb = tkinter.Frame(self.parent, bg="pink")
+        #self.fLabel = tkinter.Frame(self.lbCanvas, bg="green")
+        self.frameLb.grid(row = 0, column = 1, stick='nswe', ipadx=5)
         
-        self.label = [ [ [],[],[] ] for i in range(10)]
+        self.lbScroll = tkinter.Scrollbar(self.frameLb, orient="vertical")
+        self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", yscrollcommand=self.lbScroll.set)#, width= 250)
+        self.lbScroll.config(command=self.lbCanvas.yview)
+
+        self.fLabel = tkinter.Frame(self.lbCanvas, bg="blue")
+        self.fLabel.pack(fill="both", expand=False)
+
+        self.lbCanvas.create_window( 0,0, window=self.fLabel, anchor="nw")
+        
+        self.lbScroll.pack(side="right", fill="y")
+        self.lbCanvas.pack(side="left", fill="both", expand=True)
+                
+
+        #self.lbCanvas.config(scrollregion=self.lbCanvas.bbox("all"))
+        #self.lbCanvas.yview_moveto(0)
+
+        self.lb_comment = []
+        self.label = []
         self.lbSelect = -1
         self.labelTitle = []
 
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Rotulo", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='raised', padx=3))
         self.labelTitle[0].grid(row=0, column = 0, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comment", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comments", relief='raised', padx=3))
         self.labelTitle[1].grid(row=0, column = 1, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Cor", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Mark Color", relief='raised', padx=3))
         self.labelTitle[2].grid(row=0, column = 2, ipady=10)
 
-        for i in range(10):
- 
-            self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
-            self.label[i][0].grid(row=i+1, column = 0, ipady=5)
+        self.btn_addLb = tkinter.Button(self.fLabel, text="Add New Label", padx=3, command= self.addLb)
+        self.btn_rmLb = tkinter.Button(self.fLabel, text="Delete Last Label", padx=3, command= self.rmLb)
+        
+        if(self.dirLoadComments == "/"):
+            self.addLb()
+        else:
+            self.loadComments(1)
 
-            self.label[i][1] = tkinter.Entry(self.fLabel, textvariable=lb_comment[i])
-            self.label[i][1].bind("<Return>", self.lostFocus)
-            #self.label[i][1].bind("<Enter>", self.lostFocus)
+    def colorDefault(self):
 
-            #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
-            self.label[i][1].grid(row=i+1, column = 1, ipady=5)
+        i = len(self.label)
 
-            self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=est_color[i])
-            self.label[i][2]['command'] = lambda btn = self.label[i][2]: self.changeColor(btn)
-            self.label[i][2].grid(row=i+1, column = 2, ipady=5)
+        if(i<9):
+        
+            switcher = {
+                1: "#ff0000",
+                2: "#00ff00",
+                3: "#0000ff",
+                4: "#ffff00",
+                5: "#ff00ff",
+                6: "#00ffff",
+                7: "#ffa500",
+                8: "#a020f0"
+            }
+            return switcher.get(i)
+
+        return '#%02x%02x%02x' %( (i*35)%255, (i*55)%255, (i*15)%255)
+
+    def commentLb(self, i):
+
+        comment = tkinter.simpledialog.askstring("Editing Comment", "Comment:", initialvalue = self.lb_comment[i].get(), parent=self.parent)
+
+        if(comment == None):
+            return
+        
+        self.lb_comment[i].set(comment)
+
+    def addLb(self, load = None):
+
+        i = len(self.label)
+        self.label.append( [ [],[],[] ] )
+
+        if(load == None):
+            self.lb_comment.append(tkinter.StringVar())
+            self.lb_comment[i].set("Comment_%d" %(i+1) )
+
+            color = self.colorDefault()
+        else:
+            self.lb_comment.append(tkinter.StringVar())
+            self.lb_comment[i].set(load[0])
+
+            color = load[1]
+
+
+        self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0].grid(row=i+1, column = 0, ipady=5)
+
+        self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], padx=3, command=lambda:self.commentLb(i))
+        #self.label[i][1].bind("<Return>", self.lostFocus)
+        #self.label[i][1].bind("<Enter>", self.lostFocus)
+
+        #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
+        self.label[i][1].grid(row=i+1, column = 1, ipady=5)
+
+        self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=color)
+        self.label[i][2]['command'] = lambda btn = self.label[i][2]: self.changeColor(btn)
+        self.label[i][2].grid(row=i+1, column = 2, ipady=5)
+        
+        self.btn_addLb.grid(row=i+2, column = 0, ipady=5)
+        self.btn_rmLb.grid(row=i+2, column = 2, ipady=5)
+            
+
+    def rmLb(self, flag = None):
+
+        if( len(self.label) == 1) and (flag == None):
+            tkinter.messagebox.showwarning("Warning", "You can't delete all the labels. You need at least one to work!")
+            return
+
+        for i in range(3):
+            self.label[-1][i].destroy()
+
+        del self.label[-1]
 
     def addBind(self):
         ##########
@@ -150,9 +258,13 @@ class win_main(tkinter.Frame):
             self.parent.bind(str(i), self.selectLb)
             self.parent.bind("<KP_" + str(i) + ">", self.selectLb) #Linux - Numpad
 
+        self.fLabel.bind("<Configure>", self.OnFrameConfigure)
+
 
     def changeColor(self, btn):
-        color = askcolor() 
+        color = askcolor()
+
+        print(color)
 
         if(color[1] == None):
             return
@@ -175,7 +287,10 @@ class win_main(tkinter.Frame):
 #########################################################################
 
     def abrir(self):
-        filedir = filedialog.askopenfilename(filetypes = ( ("Jpeg Images", "*.jpg"),
+        ini_dir = self.dirImage.split("/")
+        del ini_dir[-1]
+            
+        filedir = filedialog.askopenfilename(initialdir= "/".join(ini_dir) + "/" ,filetypes = ( ("Jpeg Images", "*.jpg"),
                                                            ("Gif Images","*.gif"),
                                                            ("Png Images","*.png"),
                                                            ("Tiff Images",".*tiff") ) )
@@ -186,10 +301,13 @@ class win_main(tkinter.Frame):
         self.currImg = 0
 
         self.refresh()
+
+        self.dirImage = filedir
+        self.saveSettings()
         
         
     def abrirBatch(self):
-        dirname = filedialog.askdirectory()
+        dirname = filedialog.askdirectory(initialdir= self.dirStack)
         #print(dirname)
 
         limpar = 1
@@ -218,6 +336,79 @@ class win_main(tkinter.Frame):
                 #print(len(self.image))
                 self.refresh()
 
+        self.dirStack = dirname
+        self.saveSettings()
+
+    def saveComments(self):
+
+        file = open(self.loadComment,"w")
+
+        for i in range(len(self.lb_comment)):
+            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
+
+        file.close()
+        
+
+    def saveCommentsAs(self):
+        ini_dir = self.dirSaveComments.split("/")
+        del ini_dir[-1]
+        
+        res = filedialog.asksaveasfilename(initialdir= "/".join(ini_dir) + "/", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"),
+                                                         ("All Files", "*.*") ) )
+
+        file = open(res,"w")
+        print(res)
+
+        for i in range(len(self.lb_comment)):
+            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
+
+        file.close()
+
+        self.dirSaveComments = res
+        self.saveSettings()
+
+    def loadComments(self, flag = None):
+
+        if(flag == None):
+            ini_dir = self.dirLoadComments.split("/")
+            del ini_dir[-1]
+            
+            res = filedialog.askopenfilename(initialdir= "/".join(ini_dir) + "/" ,filetypes = [ ("Text Files","*.txt") ] )
+        else:
+            res = self.dirLoadComments
+
+        file = open(res,"r")
+
+        lines = file.read().splitlines()
+
+        lb_est = [ [ [],[] ] for i in range(1) ]
+
+        for label in lines:
+            sep = label.split(" ")
+            color = sep[1]
+            
+            del sep[1]
+            del sep[0]
+
+            lb_est.append( [" ".join(sep), color ] )
+        del lb_est[0]
+
+        for i in range(len(self.label) ):
+            self.rmLb(1)
+
+        del self.lb_comment[:]
+        self.lb_label = []
+
+        for i in range(len(lb_est)):
+            self.addLb(lb_est[i])
+
+        self.dirLoadComments = res
+
+        self.saveSettings()
+        file.close()
+
+        self.mnuArquivo.entryconfig("Save Comments", state="normal")
+
     def nada(self):
         pass
      
@@ -225,7 +416,7 @@ class win_main(tkinter.Frame):
         pass
          
     def sair(self):
-        ans = tkinter.messagebox.askquestion("Quit", "Você tem certeza?", icon='warning')
+        ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
 
         if ans == 'yes':
             #self.destroy()
@@ -235,6 +426,11 @@ class win_main(tkinter.Frame):
 #########################################################################
 #            Binds Functions
 #########################################################################
+
+    def OnFrameConfigure(self, event):
+        self.lbCanvas.configure(scrollregion=self.lbCanvas.bbox("all"))
+
+
     def lostFocus(self, event):
         self.fLabel.focus()
 
