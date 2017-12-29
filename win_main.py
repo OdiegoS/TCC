@@ -6,9 +6,9 @@ from tkinter import filedialog
 from tkinter.colorchooser import *
 from PIL import Image
 from PIL import ImageTk
-import os
 import glob
 from tkinter.simpledialog import SimpleDialog
+from projects import Projects
  
 class win_main(tkinter.Frame):
 
@@ -16,27 +16,8 @@ class win_main(tkinter.Frame):
         tkinter.Frame.__init__(self,parent)
         
         self.parent = parent
-        self.image = []
-        self.currImg = 0
-        self.loadComment = None
 
-        self.dir = None
-
-        self.dirProject = "/"
-        self.dirImage = "/"
-        self.dirStack = "/"
-        self.dirLoadComments = "/"
-        self.dirSaveComments = "/"
-        self.dirLoadAnnotations = "/"
-        self.dirSaveAnnotations = "/"
-
-        if (not os.path.isfile("settings") ):
-            file = open("settings","w")
-            file.close
-            #self.saveSettings()
-
-        if (not os.path.isdir("Projects") ):
-            os.makedirs("Projects")
+        self.projects = Projects()
         
         self.initialize()
 
@@ -58,49 +39,21 @@ class win_main(tkinter.Frame):
         self.addBind()
 
         #carregando settings (se houver)
+        self.openSettings()
+
+    def openSettings(self):
+        self.projects.openSettings()
+        
+        if( self.projects.notExistProject() ):
+            tkinter.messagebox.showwarning("Warning", "There is no project yet.\nPlease, click in OK and create a new project.")
+            self.createProj()
+            return
         self.loadSettings()
-
-    def loadSettings(self, project_dir = None):
-
         
-        if(project_dir == None):
-            file = open("settings","r")
 
-            project_dir = file.read().splitlines()
-            
-            file.close()
-
-            if len(project_dir) == 0:
-                tkinter.messagebox.showwarning("Warning", "There is no project yet.\nPlease, click in OK and create a new project.")
-                self.createProj()
-                #self.firstProj()
-                return
-            
-            self.dir = "Projects/" + project_dir[0]
+    def loadSettings(self, new = False):
          
-        self.users = []
-        self.userID = 0
-
-        #print(self.dir)
-        
-        #listUsers = os.listdir(recentProj[0])
-        file = open(self.dir,"r")
-        #file = open("C:\\Users\\diego\\Downloads\\TCC\\Projects\\teste\\teste.neuronote","r")
-        project = file.read().splitlines()
-        #listUsers = file.read
-        file.close()
-
-        for i in range(2, 2*int(project[1])+int(project[1])+1, 3) :
-            
-            if project[0] == project[i]:
-                self.userID = len(self.users)
-                
-            self.users.append( [project[i], project[i+1], project[i+2] ] )
-
-        self.user = self.users[self.userID]
-        
-        lb = project[2*int(project[1])+int(project[1])+2 : ]
-        self.loadComments(lb)
+        self.projects.loadSettings()
 
         #listUsers = project[0:-1]
         #listUsers.sort()
@@ -114,15 +67,15 @@ class win_main(tkinter.Frame):
             if(project[0] == self.users[-1]):
                 userSelection = len(self.users)-1
         '''
-        
-        if(len(self.users) > 1):
+        if( self.projects.sizeUsers()  > 1):
             self.createWin_choose()
         else:
             self.loadUser()
-            if(project_dir == "new" ):
-                tkinter.messagebox.showinfo(message="Welcome %s" %(self.user[0]) )
+            self.loadComments()
+            if( new ):
+                tkinter.messagebox.showinfo(message="Welcome %s" %(self.projects.getCurrUserName()) )
             else:
-                tkinter.messagebox.showinfo(message="Welcome back %s" %(self.user[0]) )
+                tkinter.messagebox.showinfo(message="Welcome back %s" %(self.projects.getCurrUserName()) )
                     
 
     def createWin_choose(self):
@@ -143,13 +96,13 @@ class win_main(tkinter.Frame):
 
         chWin_radio = []
         var = tkinter.IntVar()
-        for i in range(len(self.users) ):
+        for i in range(self.projects.sizeUsers()):
                 
-            chWin_radio.append(tkinter.Radiobutton(chooseWindow, text=self.users[i][0], variable = var, value=i) )
+            chWin_radio.append(tkinter.Radiobutton(chooseWindow, text=self.projects.getUserName(i), variable = var, value=i) )
             chWin_radio[i]['command'] = lambda radio = var: self.radioSelected(radio)
             chWin_radio[i].grid(row = i+1, column = 0, padx = 70)
 
-        chWin_radio[self.userID].select()
+        chWin_radio[ self.projects.currUserID ].select()
         #self.user = var.get()
 
         chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=3, bg = "green")
@@ -157,43 +110,30 @@ class win_main(tkinter.Frame):
         chWin_btnConfirm.grid(row = len(chWin_radio)+2, column = 0, padx = 70)
 
     def radioSelected(self, param):    
-        #self.user = param[0].get
-        #self.userID = param[1]
-        self.userID = param.get()
-        self.user = self.users[self.userID]
-
+        self.projects.updateCurrUser(param.get())
 
     def confirmUser(self, window):
         window.destroy()
-        tkinter.messagebox.showinfo(message="Welcome back %s" %(self.user[0]) )
+        tkinter.messagebox.showinfo(message="Welcome back %s" %(self.projects.getCurrUserName()) )
         self.loadUser()
+        self.loadComments()
 
     def loadUser(self):
-        #lines = project.read().splitlines()
-        #direct = "C:/Users/diego/Downloads/TCC/teste_demo/"
-        #lines = open(direct + self.user + ".info", "r").read().splitlines()
 
-        #self.dirImage = lines[0]
-        #self.lastImage = lines[1]
-        self.dirImage = self.user[1]
-        self.lastImage = self.user[2]
+        self.projects.updateImagePaths()
+        self.projects.updateCurrImg("load")
         
 
-        if( not (self.dirImage == "/") ):
-        
-            if( self.lastImage == '-1'):
-                self.abrir(self.dirImage)
+        if( self.projects.existImagePaths() ):
+            
+            if( self.projects.isBatchImg() ):
+                self.abrirBatch(False)
             else:
-                self.abrirBatch(self.dirImage)
-
-        #self.loadComments(project)
-
-        #self.dirStack = lines[1]
-        #self.dirLoadComments = lines[2]
-        #self.dirSaveComments = lines[3]
-        #self.dirLoadAnnotations = lines[4]
-        #self.dirSaveAnnotations = lines[5]
-
+                self.abrir(False)
+        else:
+            self.parent.title("Teste")
+            self.status.configure(text=(""))
+            self.canvas.delete("imgTag")
 
         for i in range(0, len(self.User_radio) ):
             self.User_radio[i].destroy()
@@ -204,9 +144,9 @@ class win_main(tkinter.Frame):
 
         var = tkinter.IntVar()
         
-        for i in range(0, len(self.users) ):
+        for i in range(0, self.projects.sizeUsers() ):
             
-            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.users[i][0], variable = var, value=i) )
+            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.projects.getUserName(i), variable = var, value=i) )
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
@@ -216,14 +156,14 @@ class win_main(tkinter.Frame):
 
             #if(self.user == self.users[i]):
                 #self.User_radio[i].select()
-        self.User_radio[self.userID].select()
+        self.User_radio[ self.projects.getCurrUserID() ].select()
 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0, ipady=5)
 
 
     def rmUser(self,user):
         
-        if(self.userID == user ):
+        if( self.projects.isCurrUser(user) ):
             tkinter.messagebox.showwarning("Warning", "You can't remove an active user.\nPlease, change the user and try again.")
             return
 
@@ -231,12 +171,12 @@ class win_main(tkinter.Frame):
         if(ans == "no"):
             return
 
-        for i in range(0, len(self.users) ):
+        for i in range(0, self.projects.sizeUsers() ):
             self.User_radio[i].destroy()
             self.User_btnRm[i].destroy()
 
-        name = self.users[user][0]
-        del self.users[user]
+        name = self.projects.getUserName(user)
+        self.projects.removeUser(user)
 
         var = tkinter.IntVar()
 
@@ -244,8 +184,8 @@ class win_main(tkinter.Frame):
         
         self.User_radio = []
         self.User_btnRm = []
-        for i in range(0, len(self.users) ):
-            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.users[i][0], variable = var, value=i) )
+        for i in range(0, self.projects.sizeUsers() ):
+            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.projects.getUserName(i), variable = var, value=i) )
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
@@ -253,11 +193,13 @@ class win_main(tkinter.Frame):
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
+            '''
             if(self.user[0] == self.users[i][0]):
                 #self.User_radio[i].select()
                 self.userID = i
+            '''
 
-        self.User_radio[self.userID].select()
+        self.User_radio[ self.projects.getCurrUserID() ].select()
                 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0)
 
@@ -269,15 +211,15 @@ class win_main(tkinter.Frame):
         if(new == None):
             return
         
-        for i in range(0, len(self.users) ):
+        for i in range(0, self.projects.sizeUsers() ):
             self.User_radio[i].destroy()
             self.User_btnRm[i].destroy()
 
-        self.users.append([new, "/", "/"])
+        self.projects.addUser(new)
 
         #print(self.users)
         #self.users.sort(key=lambda name: name[0][0])
-        self.users.sort()
+        #self.users.sort()
         #print("\n##########\n")
         #print(self.users)
         
@@ -287,8 +229,8 @@ class win_main(tkinter.Frame):
         
         self.User_radio = []
         self.User_btnRm = []
-        for i in range(0, len(self.users) ):
-            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.users[i][0], variable = var, value=i) )
+        for i in range(0, self.projects.sizeUsers() ):
+            self.User_radio.append(tkinter.Radiobutton(self.fUser, text=self.projects.getUserName(i), variable = var, value=i) )
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
@@ -296,30 +238,33 @@ class win_main(tkinter.Frame):
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
-            if(self.user[0] == self.users[i][0]):
+            '''
+            if( projects.isCurrUser ):
                 #self.User_radio[i].select()
-                self.userID = i
+                projects.updateCurrUser(i)
+            '''
 
-        self.User_radio[self.userID].select()
+        self.User_radio[ self.projects.getCurrUserID() ].select()
                 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0)
 
     def userSelected(self, var):
 
-        if(self.userID == var.get() ):
+        if( self.projects.isCurrUser(var.get()) ):
             return
         ans = tkinter.messagebox.askquestion("Warning", "Are you sure about changing user?", icon = "warning")
         if(ans == "yes"):
-            self.userID = var.get()
+            self.projects.updateCurrUser(var.get())
+            self.loadUser()
+            
         '''
         for i in range(0, len(self.users) ):
             if(self.user == self.users[i]):
                 self.User_radio[i].select()
         '''
-        self.User_radio[self.userID].select()
+        self.User_radio[ self.projects.getCurrUserID() ].select()
 
-        self.user = self.users[self.userID]
-
+    '''
     def saveSettings(self):
         return
         file = open("settings","w")
@@ -330,6 +275,7 @@ class win_main(tkinter.Frame):
         file.write(self.dirSaveComments + "\n")
         file.write(self.dirLoadAnnotations + "\n")
         file.write(self.dirSaveAnnotations + "\n")
+    '''
 
     def createMenu(self):
         self.top = self.winfo_toplevel()
@@ -338,7 +284,7 @@ class win_main(tkinter.Frame):
         self.mnuProject = tkinter.Menu(self.menuBar, tearoff=0)
         self.mnuProject.add_command(label="Create new project", command=self.createProj)
         self.mnuProject.add_command(label="Open project file", command=self.abrirProj)
-        self.mnuProject.add_command(label="Save Project",  command=self.saveProject)
+        self.mnuProject.add_command(label="Save Project",  command=self.projects.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
@@ -352,7 +298,7 @@ class win_main(tkinter.Frame):
         #self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
         self.mnuArquivo.add_separator()
         self.mnuArquivo.add_command(label="Quit", command=self.sair)
-        self.menuBar.add_cascade(label="File", menu=self.mnuArquivo)
+        self.menuBar.add_cascade(label="Image", menu=self.mnuArquivo)
  
         mnuTeste = tkinter.Menu(self.menuBar, tearoff=0)
         mnuTeste.add_command(label="Blabla", command=self.nada)
@@ -383,7 +329,7 @@ class win_main(tkinter.Frame):
         self.fStatus.grid(row = 1, column = 0, stick='nswe', columnspan=2)
         
         #self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
-        self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- ", bd=1,relief='sunken', anchor='w', bg='red')
+        self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
         self.status.pack(side='bottom', fill='x')
         
     def frameLabel(self):
@@ -426,13 +372,9 @@ class win_main(tkinter.Frame):
         self.btn_addLb = tkinter.Button(self.fLabel, text="Insert Label", padx=3, command= self.addLb)
         self.btn_rmLb = tkinter.Button(self.fLabel, text="Remove Last Label", padx=3, state = "disabled", command= self.rmLb)
         #self.btn_rmLb = tkinter.Button(self.fLabel, text="Remove Last Label", padx=3, command= self.rmLb)
-        
-        if(self.dirLoadComments == "/"):
-            self.addLb()
-            self.addLb()
-        else:
-            self.loadComments(1)
 
+        self.addLb()
+        self.addLb()
         
         self.frameUser = tkinter.Frame(self.frameRight, bg="purple")
         self.frameUser.grid(row = 1, stick='nswe', ipadx=5)
@@ -457,27 +399,6 @@ class win_main(tkinter.Frame):
         self.userTitle.grid(row=0, ipady = 10)
 
         self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, bg = "green", command = self.addUser)
-        
-        
-    def colorDefault(self):
-
-        i = len(self.label)
-
-        if(i<9):
-        
-            switcher = {
-                1: "#ff0000",
-                2: "#00ff00",
-                3: "#0000ff",
-                4: "#ffff00",
-                5: "#ff00ff",
-                6: "#00ffff",
-                7: "#ffa500",
-                8: "#a020f0"
-            }
-            return switcher.get(i)
-
-        return '#%02x%02x%02x' %( (i*35)%255, (i*55)%255, (i*15)%255)
 
     def commentLb(self, i):
 
@@ -487,6 +408,7 @@ class win_main(tkinter.Frame):
             return
         
         self.lb_comment[i].set(comment)
+        self.projects.updateLabelComment(i, comment)
 
     def addLb(self, load = None):
 
@@ -501,13 +423,15 @@ class win_main(tkinter.Frame):
             self.lb_comment.append(tkinter.StringVar())
             self.lb_comment[i].set("Comment_%d" %(i+1) )
 
-            color = self.colorDefault()
+            color = self.projects.colorDefault(i)
+
+            if(self.projects.sizeLabels() > 0):
+                self.projects.addLabel(self.lb_comment[i].get(), color)
         else:
             self.lb_comment.append(tkinter.StringVar())
             self.lb_comment[i].set(load[0])
 
             color = load[1]
-
 
         self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
         self.label[i][0].grid(row=i+1, column = 0, ipady=5)
@@ -520,7 +444,7 @@ class win_main(tkinter.Frame):
         self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
         self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=color)
-        self.label[i][2]['command'] = lambda btn = self.label[i][2]: self.changeColor(btn)
+        self.label[i][2]['command'] = lambda : self.changeColor(self.label[i][2], i)
         self.label[i][2].grid(row=i+1, column = 2, ipady=5)
         
         self.btn_addLb.grid(row=i+2, column = 0, ipady=5)
@@ -540,6 +464,9 @@ class win_main(tkinter.Frame):
 
         del self.lb_comment[-1]
         del self.label[-1]
+
+        if(flag == None):
+            self.projects.removeLabel()
 
     def addBind(self):
         ##########
@@ -561,34 +488,38 @@ class win_main(tkinter.Frame):
             self.parent.bind(str(i), self.selectLb)
             self.parent.bind("<KP_" + str(i) + ">", self.selectLb) #Linux - Numpad
 
-        self.fLabel.bind("<Configure>", self.OnFrameConfigure)
+        self.fLabel.bind("<Configure>", self.OnFrameConfigureLabel)
+        self.fUser.bind("<Configure>", self.OnFrameConfigureUser)
 
 
-    def changeColor(self, btn):
+    def changeColor(self, btn, i):
         color = askcolor()
 
-        print(color)
+        #print(color)
 
         if(color[1] == None):
             return
             
         btn.configure(bg=color[1])
+        self.projects.updateLabelColor(i, color[1])
 
     def refresh(self):
-        self.canvas.config(width=self.image[ self.currImg ].width(), height=self.image[ self.currImg ].height())
-        self.canvas.image = self.image[ self.currImg ]
+        
+        dimensionImg = self.projects.getDimensionCurrImg()
+                       
+        self.canvas.config(width=dimensionImg[0], height=dimensionImg[1] )
+        self.canvas.image = self.projects.getCurrImg()
 
-        self.canvas.create_image(self.image[ self.currImg ].width()/2+2, self.image[ self.currImg ].height()/2+1, image=self.image[ self.currImg ], tags="imgTag")
+        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.projects.getCurrImg(), tags="imgTag")
         self.canvas.pack(fill='both', expand=True)
 
-        if(self.user[2] == '-1'):
-            self.status.configure(text=("X: -- \t Y: -- "))
+        if( self.projects.isBatchImg() ):
+            self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d" %(self.projects.getCurrImgID()+1, self.projects.sizeImages() )))
+            self.projects.updateUserImg()
         else:
-            self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d" %(self.currImg+1, len(self.image) )))
+            self.status.configure(text=("X: -- \t Y: -- "))
 
-        self.parent.title("Teste (%s)" %self.files[self.currImg])
-
-        self.users[self.userID][2] = self.currImg
+        self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
 
         
 #########################################################################
@@ -630,169 +561,73 @@ class win_main(tkinter.Frame):
             tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a name in the field before proceeding.")
             return
 
-        #os.makedirs("Projects/" + info[0].get() )
-        file = open("Projects/" + info[0].get() + ".neuronote","w")
-        file.write(info[1].get() + "\n1\n" + info[1].get() + "\n/\n/\n")
-        file.write("1 #ff0000 Comment_1\n2 #00ff00 Comment_2")
-        file.flush()
-        file.close
-
-        self.dir = "Projects/" + info[0].get() + ".neuronote"
-        #self.dir = info[0].get() + ".neuronote"
+        self.projects.newProject(info[0].get(), info[1].get())
 
         info[2].destroy()
 
-        file = open("settings","w")
-        file.write(self.dir[0])
-        file.flush()
-        file.close
-        
-        self.loadSettings("new")
+        self.loadSettings(True)
 
 
     def abrirProj(self):
-        filedir = filedialog.askopenfilename(initialdir= os.path.dirname(os.path.realpath(__file__)) + "/Projects/",filetypes = [("NeuroNote Project", "*.neuronote")] )
+        filedir = filedialog.askopenfilename(initialdir= self.projects.getAppPath() + "/Projects/",filetypes = [("NeuroNote Project", "*.neuronote")] )
         #filedir = filedialog.askopenfilename(initialdir = "/Projects",filetypes = [("NeuroNote Project", "*.neuronote")] )
 
         if(len(filedir) > 0):
             #self.dir = os.path.split(filedir)
-            self.dir = filedir
+            self.projects.updateProjectPath(filedir)
             
-            self.loadSettings(filedir)
+            self.loadSettings()
         return
     
-    def abrir(self, filedir = None):
+    def abrir(self, menu = True):
 
-        if(filedir == None):
-            ini_dir = self.dirImage.split("/")
-            del ini_dir[-1]
-            
-            filedir = filedialog.askopenfilename(initialdir= "/".join(ini_dir) + "/" ,filetypes = ( ("Jpeg Images", "*.jpg"),
-                                                           ("Gif Images","*.gif"),
-                                                           ("Png Images","*.png"),
-                                                           ("Tiff Images",".*tiff") ) )
+        #testa se foi chamado pelo menu
+        if(menu):
+            filedir = filedialog.askopenfilename(initialdir= self.projects.lastImagePath ,filetypes = ( ("Jpeg Images", "*.jpg"),
+                                                            ("Gif Images","*.gif"),
+                                                            ("Png Images","*.png"),
+                                                            ("Tiff Images",".*tiff") ) )
                                                             #("All Files", "*.*") ) )
-        #print(filedir)
-        self.files = [filedir]
-        self.image = [(ImageTk.PhotoImage(Image.open(filedir)))]
-        self.currImg = -1
+            #testa se o diretório do arquivo está vazio
+            if(not filedir):
+                return
+            
+            self.projects.updateImagePaths(filedir)
+            self.projects.openImage(filedir)
+        else:
+            self.projects.updateImagePaths()
+            self.projects.openImage()
 
         self.refresh()
-
-        self.dirImage = filedir
-        self.saveSettings()
-
-        self.users[self.userID][1] = self.dirImage
-        self.users[self.userID][2] = -1
+        #self.saveSettings()
         
-        
-    def abrirBatch(self, dirname = None):
+    def abrirBatch(self, menu = True):
 
-        if(dirname == None):
-            dirname = filedialog.askdirectory(initialdir= self.dirStack)
+        if(menu):
+            dirname = filedialog.askdirectory(initialdir= self.projects.lastImagePath)
             #print(dirname)
 
-        limpar = 1
+            if(not dirname):
+                return
 
-        images_ext = [".jpg",".gif",".png",".tiff"]
+        #images_ext = [".jpg",".gif",".png",".tiff"]
 
-        listFiles = os.listdir(dirname)
-        listFiles.sort()
-        #print(listFiles)
-        for filename in listFiles:
-            
-            ext = os.path.splitext(filename)[1]
-            if ext.lower() not in images_ext:
-                continue
-            
-            if(limpar == 1):
-                self.files = []
-                self.image = []
-                self.currImg = int(self.user[2])
-                limpar = 0
+            limpar = self.projects.openBatch(dirname)
+        else:
+            limpar = self.projects.openBatch()
 
-                
-            self.image.append(ImageTk.PhotoImage(Image.open(dirname + "/" + filename)))
-            self.files.append(dirname + "/" + filename)
-
-            #print(filename)
-
-        if ( (len(self.image) > 0) and (limpar == 0) ):
-            #print(len(self.image))
+        if ( self.projects.sizeImages() > 0) and (limpar == 0):
             self.refresh()
 
-        self.dirStack = dirname
-        self.saveSettings()
-
-        self.users[self.userID][1] = self.dirStack
-
-    def saveComments(self):
-
-        file = open(self.loadComment,"w")
-
-        for i in range(len(self.lb_comment)):
-            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
-
-        file.close()
-        
-
-    def saveCommentsAs(self):
-        ini_dir = self.dirSaveComments.split("/")
-        del ini_dir[-1]
-        
-        res = filedialog.asksaveasfilename(initialdir= "/".join(ini_dir) + "/", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"),
-                                                         ("All Files", "*.*") ) )
-
-        file = open(res,"w")
-        print(res)
-
-        for i in range(len(self.lb_comment)):
-            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
-
-        file.close()
-
-        self.dirSaveComments = res
-        self.saveSettings()
-
-    def saveProject(self):
-
-        file = open(self.dir,"w")
-
-        file.write(self.user[0] + "\n%d\n" %(len(self.users)) )
-
-        for i in range(len(self.users)):
-            file.write("%s\n%s\n%s\n" %( self.users[i][0], self.users[i][1], self.users[i][2] ) )
-
-        for i in range(len(self.lb_comment)):
-            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
-
-        file.flush()
-        file.close()
-        
+        #self.saveSettings()
 
     def saveProjectAs(self):
 
         res = filedialog.asksaveasfilename(defaultextension=".neuronote", filetypes = ( ("Neuronote Files","*.neuronote"),
                                                          ("All Files", "*.*") ) )
+        self.projects.saveProject(res)
 
-        file = open(res,"w")
-        #print(res)
-
-        file.write(self.user[0] + "\n%d\n" %(len(self.users)) )
-
-        for i in range(len(self.users)):
-            file.write("%s\n%s\n%s\n" %( self.users[i][0], self.users[i][1], self.users[i][2] ) )
-
-        for i in range(len(self.lb_comment)):
-            file.write("%d %s %s\n" %( i+1, self.label[i][2].cget("bg"), self.lb_comment[i].get() ) )
-
-        file.flush()        
-        file.close()
-
-        #self.dirSaveComments = res
-        #self.saveSettings()
-
-    def loadComments(self, lines):
+    def loadComments(self):
 
         """
         if(flag == None):
@@ -807,18 +642,9 @@ class win_main(tkinter.Frame):
 
         lines = file.read().splitlines()
         """
+        
+        self.btn_rmLb.configure(state="disabled")
 
-        lb_est = [ [ [],[] ] for i in range(1) ]
-
-        for label in lines:
-            sep = label.split(" ")
-            color = sep[1]
-            
-            del sep[1]
-            del sep[0]
-
-            lb_est.append( [" ".join(sep), color ] )
-        del lb_est[0]
 
         for i in range(len(self.label) ):
             self.rmLb(1)
@@ -826,8 +652,8 @@ class win_main(tkinter.Frame):
         del self.lb_comment[:]
         self.lb_label = []
 
-        for i in range(len(lb_est)):
-            self.addLb(lb_est[i])
+        for i in range( self.projects.sizeLabels() ):
+            self.addLb( self.projects.getLabels(i) )
 
         #self.dirLoadComments = res
 
@@ -854,12 +680,17 @@ class win_main(tkinter.Frame):
 #            Binds Functions
 #########################################################################
 
-    def OnFrameConfigure(self, event):
+    def OnFrameConfigureLabel(self, event):
         self.lbCanvas.configure(scrollregion=self.lbCanvas.bbox("all"))
 
+    def OnFrameConfigureUser(self, event):
+        self.userCanvas.configure(scrollregion=self.userCanvas.bbox("all"))
 
     def lostFocus(self, event):
         self.fLabel.focus()
+
+    def lostFocus2(self, event):
+        self.fUser.focus()
 
     def selectLb(self, event):
         if(event.keysym[0] == 'K'):
@@ -887,10 +718,10 @@ class win_main(tkinter.Frame):
         print ("%d, %d" %(event.x, event.y) )
 
     def motion(self, event):
-        if(self.user[2] == -1):
-            self.status.configure(text=("X: %d \t Y: %d" %(event.x, event.y)))
+        if( self.projects.isBatchImg() ):
+            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d" %(event.x, event.y, self.projects.getCurrImgID()+1, self.projects.sizeImages() )))
         else:
-            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d" %(event.x, event.y, self.currImg+1, len(self.image) )))
+            self.status.configure(text=("X: %d \t Y: %d" %(event.x, event.y)))
         #self.status.pack()
 
     def moveImg(self, event):
@@ -898,12 +729,12 @@ class win_main(tkinter.Frame):
         #print(event)
         change = 0
         if (event.keysym == "Next") or (event.delta < 0) or (event.num == 5):
-            if(self.currImg > 0):
-                self.currImg = self.currImg - 1
+            if( self.projects.getCurrImgID()  > 0):
+                self.projects.updateCurrImg("sub")
                 change = 1
         if (event.keysym == "Prior") or (event.delta > 0) or (event.num == 4):
-            if self.currImg < len(self.image)-1:
-                self.currImg = self.currImg + 1
+            if self.projects.getCurrImgID() < self.projects.sizeImages()-1:
+                self.projects.updateCurrImg("add")
                 change = 1
         #print(self.currImg)
         if change == 1:
