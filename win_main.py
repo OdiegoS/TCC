@@ -509,7 +509,8 @@ class win_main(tkinter.Frame):
     def addBind(self):
         ##########
         #Image Bind
-        self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
+        #self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
+        self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
         self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
 
         self.parent.bind("<Next>", self.moveImg)
@@ -534,6 +535,27 @@ class win_main(tkinter.Frame):
 
         self.parent.bind("<plus>", self.zoom)
         self.parent.bind("<minus>", self.zoom)
+
+        self.canvas.tag_bind("imgTag", "<ButtonPress-1>", self.buttonPress)
+        self.canvas.tag_bind("imgTag", "<B1-Motion>", self.buttonMove)
+        self.canvas.tag_bind("imgTag", "<ButtonRelease-1>", self.buttonRelease)
+
+    def buttonPress(self, event):
+        self.canvasX = event.x
+        self.canvasY = event.y
+
+    def buttonRelease(self, event):
+        self.canvasX = 0
+        self.canvasY = 0
+
+    def buttonMove(self, event):
+        deltaX = event.x - self.canvasX
+        deltaY = event.y - self.canvasY
+
+        self.canvas.move("imgTag", deltaX, deltaY)
+
+        self.canvasX = event.x
+        self.canvasY = event.y
         
     def changeColor(self, btn, i):
         color = askcolor()
