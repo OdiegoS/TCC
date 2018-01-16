@@ -291,7 +291,7 @@ class win_main(tkinter.Frame):
         self.mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
         #self.mnuArquivo.add_command(label="Open Image", state = "disabled", command=self.abrir)
         self.mnuArquivo.add_command(label="Open Image", command=self.abrir)
-        self.mnuArquivo.add_command(label="Open Directory", command=self.abrirBatch)
+        self.mnuArquivo.add_command(label="Open Stack", command=self.abrirBatch)
         #self.mnuArquivo.add_command(label="Save Annotation ", command=self.nada)
         #self.mnuArquivo.add_command(label="Save Comments", state = "disabled", command=self.saveComments)
         #self.mnuArquivo.add_command(label="Save Comments As", command=self.saveCommentsAs)
@@ -316,9 +316,22 @@ class win_main(tkinter.Frame):
         #self.fMain.grid(row=0, column = 0, stick='nw')
         self.fMain.grid(row=0, column = 0)
 
-        self.canvas = tkinter.Canvas(self.fMain, width=998, height=665, highlightthickness=0)
+
+        self.parent.columnconfigure(0, weight=1, minsize=450)
+        #self.fMain.rowconfigure(0, weight=1)
+        #self.fMain.columnconfigure(0, weight=1)
+
+        self.imgScrollVertical = tkinter.Scrollbar(self.fMain, orient="vertical")
+        self.imgScrollHorizontal = tkinter.Scrollbar(self.fMain, orient="horizontal")
+        self.canvas = tkinter.Canvas(self.fMain, width=998, height=665, highlightthickness=0, scrollregion=(0,0,100,100), xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
         self.canvas.config(bg="yellow")
 
+        self.imgScrollVertical.config(command=self.canvas.yview)
+        self.imgScrollHorizontal.config(command=self.canvas.xview)
+        
+
+        self.imgScrollVertical.pack(side="right", fill="y")
+        self.imgScrollHorizontal.pack(side="bottom", fill="x")
         #998x665
         #Somar 2 se qt pixel for par e somar 1 se qt de pixel for impar?
         #self.canvas.create_image(self.photo.width()/2+2, self.photo.height()/2+1, image=self.photo, tags="imgTag")
@@ -327,6 +340,9 @@ class win_main(tkinter.Frame):
     def frameStatus(self):
         self.fStatus = tkinter.Frame(self.parent)
         self.fStatus.grid(row = 1, column = 0, stick='nswe', columnspan=2)
+
+        #self.fStatus.rowconfigure(0, weight=1)
+        #self.fStatus.columnconfigure(0, weight=1)
         
         #self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
         self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
@@ -336,21 +352,35 @@ class win_main(tkinter.Frame):
         self.frameRight = tkinter.Frame(self.parent, bg= "orange")
         self.frameRight.grid(row = 0, column = 1, stick='nswe', ipadx=5)
 
+
+        self.parent.columnconfigure(1, weight=1, minsize=300)
+        self.frameRight.rowconfigure(0, weight=1, minsize=170)
+        self.frameRight.columnconfigure(0, weight=1)
+        self.frameRight.rowconfigure(1, weight=1, minsize=130)
                 
         self.frameLb = tkinter.Frame(self.frameRight, bg="pink")
         #self.fLabel = tkinter.Frame(self.lbCanvas, bg="green")
         self.frameLb.grid(row = 0, stick='nswe', ipadx=5)
+
+        #self.frameLb.rowconfigure(0, weight=1)
+        #self.frameLb.columnconfigure(0, weight=1)
         
-        self.lbScroll = tkinter.Scrollbar(self.frameLb, orient="vertical")
-        self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", yscrollcommand=self.lbScroll.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
-        self.lbScroll.config(command=self.lbCanvas.yview)
+        self.lbScrollVertical = tkinter.Scrollbar(self.frameLb, orient="vertical")
+        self.lbScrollHorizontal = tkinter.Scrollbar(self.frameLb, orient="horizontal")
+        self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
+        self.lbScrollVertical.config(command=self.lbCanvas.yview)
+        self.lbScrollHorizontal.config(command=self.lbCanvas.xview)
 
         self.fLabel = tkinter.Frame(self.lbCanvas, bg="blue")
         self.fLabel.pack(fill="both", expand=False)
 
+        #self.fLabel.rowconfigure(0, weight=1)
+        #self.fLabel.columnconfigure(0, weight=1)
+
         self.lbCanvas.create_window( 0,0, window=self.fLabel, anchor="nw")
         
-        self.lbScroll.pack(side="right", fill="y")
+        self.lbScrollVertical.pack(side="right", fill="y")
+        self.lbScrollHorizontal.pack(side="bottom", fill="x")
         self.lbCanvas.pack(side="left", fill="both", expand=True)
                 
         
@@ -359,7 +389,6 @@ class win_main(tkinter.Frame):
 
         self.lb_comment = []
         self.label = []
-        self.lbSelect = -1
         self.labelTitle = []
 
         self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='raised', padx=3))
@@ -379,17 +408,26 @@ class win_main(tkinter.Frame):
         self.frameUser = tkinter.Frame(self.frameRight, bg="purple")
         self.frameUser.grid(row = 1, stick='nswe', ipadx=5)
 
-        self.userScroll = tkinter.Scrollbar(self.frameUser, orient="vertical")
-        self.userCanvas = tkinter.Canvas(self.frameUser, bg ="pink", yscrollcommand=self.userScroll.set)#, width= 250)
-        self.userScroll.config(command=self.userCanvas.yview)
+        #self.frameUser.rowconfigure(0, weight=1)
+        #self.frameUser.columnconfigure(0, weight=1)
+
+        self.userScrollVertical = tkinter.Scrollbar(self.frameUser, orient="vertical")
+        self.userScrollHorizontal = tkinter.Scrollbar(self.frameUser, orient="horizontal")
+        self.userCanvas = tkinter.Canvas(self.frameUser, bg ="pink", xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
+        self.userScrollVertical.config(command=self.userCanvas.yview)
+        self.userScrollHorizontal.config(command=self.userCanvas.xview)
 
         self.fUser = tkinter.Frame(self.userCanvas, bg="gray")
         self.fUser.pack(fill="both", expand=False)
 
+        #self.fUser.rowconfigure(0, weight=1)
+        #self.fUser.columnconfigure(0, weight=1)
+
         #120
         self.userCanvas.create_window( 0, 0, window=self.fUser, anchor="nw")
         
-        self.userScroll.pack(side="right", fill="y")
+        self.userScrollVertical.pack(side="right", fill="y")
+        self.userScrollHorizontal.pack(side="bottom", fill="x")
         self.userCanvas.pack(side="left", fill="both", expand=True)
 
         self.User_radio = []
@@ -484,14 +522,19 @@ class win_main(tkinter.Frame):
         ##########
 
         #Label Bind
+        
         for i in range(10):
             self.parent.bind(str(i), self.selectLb)
             self.parent.bind("<KP_" + str(i) + ">", self.selectLb) #Linux - Numpad
 
+        
+        self.fMain.bind("<Configure>", self.OnFrameConfigureImg)
         self.fLabel.bind("<Configure>", self.OnFrameConfigureLabel)
         self.fUser.bind("<Configure>", self.OnFrameConfigureUser)
 
-
+        self.parent.bind("<plus>", self.zoom)
+        self.parent.bind("<minus>", self.zoom)
+        
     def changeColor(self, btn, i):
         color = askcolor()
 
@@ -504,22 +547,44 @@ class win_main(tkinter.Frame):
         self.projects.updateLabelColor(i, color[1])
 
     def refresh(self):
+
+        self.projects.resetImgScale()
         
         dimensionImg = self.projects.getDimensionCurrImg()
-                       
+
         self.canvas.config(width=dimensionImg[0], height=dimensionImg[1] )
         self.canvas.image = self.projects.getCurrImg()
 
-        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.projects.getCurrImg(), tags="imgTag")
+        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.canvas.image, tags="imgTag")
         self.canvas.pack(fill='both', expand=True)
 
         if( self.projects.isBatchImg() ):
-            self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d" %(self.projects.getCurrImgID()+1, self.projects.sizeImages() )))
+            self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d \t\t Scale: %d%%" %(self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
             self.projects.updateUserImg()
         else:
-            self.status.configure(text=("X: -- \t Y: -- "))
+            self.status.configure(text=("X: -- \t Y: -- \t\t Scale: %d%%" % (self.projects.getImgScale()*100) ))
 
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
+
+    def redraw(self):
+        self.canvas.delete("all")
+        
+        dimensionImg = self.projects.getDimensionCurrImg()
+
+        size = int(self.projects.getImgScale() * dimensionImg[0]), int(self.projects.getImgScale() * dimensionImg[1])
+        self.canvas.image = self.projects.getCurrImgResize(size)
+
+        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.canvas.image, tags="imgTag")
+
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+        #self.imgScrollVertical.config(command=self.canvas.yview)
+        #self.imgScrollHorizontal.config(command=self.canvas.xview)
+        self.canvas.config(xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
+
+        #self.imgScrollVertical.pack(side="right", fill="y")
+        #self.imgScrollHorizontal.pack(side="bottom", fill="x")
+        self.canvas.pack(fill='both', expand=True)
 
         
 #########################################################################
@@ -680,6 +745,9 @@ class win_main(tkinter.Frame):
 #            Binds Functions
 #########################################################################
 
+    def OnFrameConfigureImg(self, event):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
     def OnFrameConfigureLabel(self, event):
         self.lbCanvas.configure(scrollregion=self.lbCanvas.bbox("all"))
 
@@ -701,27 +769,30 @@ class win_main(tkinter.Frame):
         if(key == -1):
             key = 9
         #print("Selecionado Label #%d" %(key) )
-    
-        if( (self.lbSelect > -1) and (self.lbSelect != key) ):
-            self.label[self.lbSelect][0].configure(relief='flat')
-            self.label[self.lbSelect][1].configure(relief='flat')
-            self.label[self.lbSelect][2].configure(relief='flat')
+
+        if(key >= self.projects.sizeLabels()):
+            return
+        
+        if( (self.projects.getSelectedLb() > -1) and (self.projects.getSelectedLb() != key) ):
+            self.label[self.projects.getSelectedLb()][0].configure(relief='flat')
+            self.label[self.projects.getSelectedLb()][1].configure(relief='flat')
+            self.label[self.projects.getSelectedLb()][2].configure(relief='flat')
             
             
         self.label[key][0].configure(relief='solid')
         self.label[key][1].configure(relief='solid')
         self.label[key][2].configure(relief='solid')
 
-        self.lbSelect = key
+        self.projects.setSelectedLb(key)
         
     def onClick(self, event):
         print ("%d, %d" %(event.x, event.y) )
 
     def motion(self, event):
         if( self.projects.isBatchImg() ):
-            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d" %(event.x, event.y, self.projects.getCurrImgID()+1, self.projects.sizeImages() )))
+            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d \t\t Scale: %d%%" %(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y), self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
         else:
-            self.status.configure(text=("X: %d \t Y: %d" %(event.x, event.y)))
+            self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" %(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y), self.projects.getImgScale()*100)))
         #self.status.pack()
 
     def moveImg(self, event):
@@ -740,6 +811,16 @@ class win_main(tkinter.Frame):
         if change == 1:
             self.refresh()
 
+    
+    def zoom(self,event):
+        if(event.keysym == "plus"):
+            res = self.projects.increaseImgScale()
+        else:
+            res = self.projects.decreaseImgScale()
+
+        if(res):
+            self.redraw()
+
 #########################################################################
 #########################################################################
 if __name__ == "__main__":
@@ -747,6 +828,8 @@ if __name__ == "__main__":
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
     root.title('Teste')
+
+    root.minsize(750,340)
     
     #root.geometry('1000x700') #ativado para testes
     #root.resizable(width=False, height=False)

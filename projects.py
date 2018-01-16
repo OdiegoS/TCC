@@ -21,6 +21,11 @@ class Projects(object):
         self.projectPath = None
         self.lastImagePath = None
         self.lastBatchPath = None
+        self.selectedLb = -1
+        self.imgScale = 1.0
+        self.maxScale = 5.0
+        self.minScale = 0.25
+        self.scaleRate = 0.25
         self.appPath = os.path.dirname(os.path.realpath(__file__))
 
         if (not os.path.isfile("settings") ):
@@ -153,11 +158,12 @@ class Projects(object):
         return True
 
     def getDimensionCurrImg(self):
-        img = self.images[ self.currImgID ]      
+        img = self.getCurrImg() 
         return [img.width(), img.height() ]
 
     def getCurrImg(self):
-        return self.images[ self.currImgID ]
+        img = ImageTk.PhotoImage(self.images[ self.currImgID ])
+        return img
 
     def getPathCurrImg(self):
         if( type(self.imagePaths) is list):
@@ -249,9 +255,9 @@ class Projects(object):
 
     def openImage(self, path = None):
         if(path == None):
-            self.images = [(ImageTk.PhotoImage(Image.open(self.currUser[1])))]
+            self.images = [(Image.open(self.currUser[1]))]
         else:
-            self.images = [(ImageTk.PhotoImage(Image.open(path)))]
+            self.images = [Image.open(path)]
             
         #self.currImg = -1
         self.currImgID = 0
@@ -288,7 +294,7 @@ class Projects(object):
                 
                 limpar = 0
 
-            self.images.append(ImageTk.PhotoImage(Image.open(path + "/" + filename)))
+            self.images.append(Image.open(path + "/" + filename))
             self.imagePaths.append(path + "/" + filename)
 
         self.lastBatchPath = path
@@ -317,3 +323,36 @@ class Projects(object):
 
         file.flush()
         file.close()
+
+    def setSelectedLb(self, key):
+        self.selectedLb = key
+
+    def getSelectedLb(self):
+        return self.selectedLb
+
+    def getCurrImgResize(self, size):
+        img = self.images[ self.currImgID ]
+        newImg = ImageTk.PhotoImage(img.resize(size))
+        return newImg
+
+    def increaseImgScale(self):
+        newScale = self.imgScale + self.scaleRate
+        if( newScale > self.maxScale):
+            return False
+        
+        self.imgScale = newScale
+        return True
+
+    def decreaseImgScale(self):
+        newScale = self.imgScale - self.scaleRate
+        if( newScale < self.minScale):
+            return False
+        
+        self.imgScale = newScale
+        return True
+
+    def getImgScale(self):
+        return self.imgScale
+
+    def resetImgScale(self):
+        self.imgScale = 1.0
