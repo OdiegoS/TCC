@@ -13,6 +13,7 @@ class Projects(object):
         self.currUser = None
         self.currUserID = None
         self.currImgID = 0
+        self.masks = []
         self.images = []
         self.imagePaths = None
         self.defaultPath = "Projects/"
@@ -165,6 +166,20 @@ class Projects(object):
         img = ImageTk.PhotoImage(self.images[ self.currImgID ])
         return img
 
+    def getCurrMask(self):
+        img = ImageTk.PhotoImage(self.masks[ self.currImgID ] )
+        return img
+
+    def getImage(self, pos):
+        return self.images[pos]
+
+    def getMask(self, pos):
+        return self.masks[pos]
+
+    def setImage(self, pos, img):
+        self.images[pos] = img
+        self.masks[pos] = Image.new('RGBA', (img.width, img.height), (0,0,0,100))
+
     def getPathCurrImg(self):
         if( type(self.imagePaths) is list):
             return self.imagePaths[ self.currImgID ]
@@ -220,6 +235,7 @@ class Projects(object):
             
             if(self.imagePaths == '/'):
                 del self.images[:]
+                del self.masks[:]
                 
         else:
             self.imagePaths = path
@@ -258,6 +274,9 @@ class Projects(object):
             self.images = [(Image.open(self.currUser[1]))]
         else:
             self.images = [Image.open(path)]
+
+        print("passou")
+        self.masks = [ (Image.new('RGBA', (self.images[0].width, self.images[0].height), (0,0,0,100)) ) ]
             
         #self.currImg = -1
         self.currImgID = 0
@@ -285,6 +304,7 @@ class Projects(object):
             if(limpar == 1):
                 self.imagePaths = []
                 self.images = []
+                self.masks = []
                 
                 if(path == None):
                     self.currImgID = int(self.currUser[2])
@@ -295,6 +315,9 @@ class Projects(object):
                 limpar = 0
 
             self.images.append(Image.open(path + "/" + filename))
+
+            print("passou")
+            self.masks.append(Image.new('RGBA', (self.images[-1].width, self.images[-1].height), (0,0,0,100)) )
             self.imagePaths.append(path + "/" + filename)
 
         self.lastBatchPath = path
@@ -332,6 +355,11 @@ class Projects(object):
 
     def getCurrImgResize(self, size):
         img = self.images[ self.currImgID ]
+        newImg = ImageTk.PhotoImage(img.resize(size))
+        return newImg
+
+    def getCurrMaskResize(self,size):
+        img = self.masks [ self.currImgID ]
         newImg = ImageTk.PhotoImage(img.resize(size))
         return newImg
 

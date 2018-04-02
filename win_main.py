@@ -134,6 +134,7 @@ class win_main(tkinter.Frame):
             self.parent.title("Teste")
             self.status.configure(text=(""))
             self.canvas.delete("imgTag")
+            self.canvas.delete("maskTag")
 
         for i in range(0, len(self.User_radio) ):
             self.User_radio[i].destroy()
@@ -323,7 +324,7 @@ class win_main(tkinter.Frame):
 
         self.imgScrollVertical = tkinter.Scrollbar(self.fMain, orient="vertical")
         self.imgScrollHorizontal = tkinter.Scrollbar(self.fMain, orient="horizontal")
-        self.canvas = tkinter.Canvas(self.fMain, width=998, height=665, highlightthickness=0, scrollregion=(0,0,100,100), xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
+        self.canvas = tkinter.Canvas(self.fMain, highlightthickness=10, scrollregion=(0,0,100,100), xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
         self.canvas.config(bg="yellow")
 
         self.imgScrollVertical.config(command=self.canvas.yview)
@@ -510,8 +511,11 @@ class win_main(tkinter.Frame):
         ##########
         #Image Bind
         #self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
-        self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
-        self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
+
+        #self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
+        #self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
+        self.canvas.tag_bind("maskTag", "<Double-Button-1>", self.onClick)
+        self.canvas.tag_bind("maskTag", "<Motion>", self.motion)
 
         self.parent.bind("<Next>", self.moveImg)
         self.parent.bind("<Prior>", self.moveImg)
@@ -536,23 +540,43 @@ class win_main(tkinter.Frame):
         self.parent.bind("<plus>", self.zoom)
         self.parent.bind("<minus>", self.zoom)
 
-        self.canvas.tag_bind("imgTag", "<ButtonPress-1>", self.buttonPress)
-        self.canvas.tag_bind("imgTag", "<B1-Motion>", self.buttonMove)
-        self.canvas.tag_bind("imgTag", "<ButtonRelease-1>", self.buttonRelease)
+        #self.canvas.tag_bind("imgTag", "<ButtonPress-3>", self.buttonPress)
+        #self.canvas.tag_bind("imgTag", "<B3-Motion>", self.buttonMove)
+        #self.canvas.tag_bind("imgTag", "<ButtonRelease-3>", self.buttonRelease)
+        self.canvas.tag_bind("maskTag", "<ButtonPress-3>", self.buttonPress)
+        self.canvas.tag_bind("maskTag", "<B3-Motion>", self.buttonMove)
+        self.canvas.tag_bind("maskTag", "<ButtonRelease-3>", self.buttonRelease)
 
     def buttonPress(self, event):
         self.canvasX = event.x
         self.canvasY = event.y
 
+        self.atualX = self.canvas.canvasx(event.x)
+        self.atualY = self.canvas.canvasy(event.y)
+        
+        #self.canvas.scan_mark(self.canvasX, self.canvasY)
+
     def buttonRelease(self, event):
         self.canvasX = 0
         self.canvasY = 0
+
+        self.dragX = self.dragX + self.dX;
+        self.dragY = self.dragY + self.dY;
+        #print(self.dragY, self.dragX)
+
+        #self.atualX = 0;
+        #self.atualY = 0;
 
     def buttonMove(self, event):
         deltaX = event.x - self.canvasX
         deltaY = event.y - self.canvasY
 
+        self.dX = self.canvas.canvasx(event.x) - self.atualX
+        self.dY = self.canvas.canvasy(event.y) - self.atualY
+
         self.canvas.move("imgTag", deltaX, deltaY)
+        self.canvas.move("maskTag", deltaX, deltaY)
+        #self.canvas.scan_dragto(event.x, event.y, gain=1);
 
         self.canvasX = event.x
         self.canvasY = event.y
@@ -576,9 +600,30 @@ class win_main(tkinter.Frame):
 
         self.canvas.config(width=dimensionImg[0], height=dimensionImg[1] )
         self.canvas.image = self.projects.getCurrImg()
+        self.canvas.mask = self.projects.getCurrMask()
 
-        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.canvas.image, tags="imgTag")
+        tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
+        if( (dimensionImg[0] % 2) > 0):
+            tam[0] = tam[0] + 1;
+        if( (dimensionImg[1] % 2) > 0):
+            tam[1] = tam[1] + 1;
+
+
+        #self.canvas.mask = Image.new('RGBA', dimensionImg, (0,0,0,0))
+        #self.canvas.mask = ImageTk.PhotoImage(self.canvas.mask)
+
+        self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
+        self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
         self.canvas.pack(fill='both', expand=True)
+
+        self.dragX = self.canvas.bbox("imgTag")[0];
+        self.dragY = self.canvas.bbox("imgTag")[1];
+
+        self.dX = 0
+        self.dY = 0
+
+        #print(self.canvas.bbox("imgTag"))
+
 
         if( self.projects.isBatchImg() ):
             self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d \t\t Scale: %d%%" %(self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
@@ -590,13 +635,58 @@ class win_main(tkinter.Frame):
 
     def redraw(self):
         self.canvas.delete("all")
+
+        dimensionImg = self.projects.getDimensionCurrImg()
+
+        size = int(self.projects.getImgScale() * dimensionImg[0]), int(self.projects.getImgScale() * dimensionImg[1])
         
+        self.canvas.image = self.projects.getCurrImgResize(size)
+        self.canvas.mask = self.projects.getCurrMaskResize(size)
+
+        tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
+        if( (dimensionImg[0] % 2) > 0):
+            tam[0] = tam[0] + 1;
+        if( (dimensionImg[1] % 2) > 0):
+            tam[1] = tam[1] + 1;
+
+
+        self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
+        self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
+
+        self.dragX = self.canvas.bbox("imgTag")[0];
+        self.dragY = self.canvas.bbox("imgTag")[1];
+
+        #print(self.canvas.bbox("imgTag"))
+
+        self.dX = 0
+        self.dY = 0
+
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+        #self.imgScrollVertical.config(command=self.canvas.yview)
+        #self.imgScrollHorizontal.config(command=self.canvas.xview)
+        self.canvas.config(xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
+
+        #self.imgScrollVertical.pack(side="right", fill="y")
+        #self.imgScrollHorizontal.pack(side="bottom", fill="x")
+        self.canvas.pack(fill='both', expand=True)
+
+    def paint(self):
+
         dimensionImg = self.projects.getDimensionCurrImg()
 
         size = int(self.projects.getImgScale() * dimensionImg[0]), int(self.projects.getImgScale() * dimensionImg[1])
         self.canvas.image = self.projects.getCurrImgResize(size)
+        self.canvas.mask = self.projects.getCurrMaskResize(size)
 
-        self.canvas.create_image(dimensionImg[0]/2+2, dimensionImg[1]/2+1, image=self.canvas.image, tags="imgTag")
+        self.canvas.itemconfigure(self.canvas.imgID, image=self.canvas.image)
+        self.canvas.itemconfigure(self.canvas.maskID, image=self.canvas.mask)
+
+        self.dragX = self.canvas.bbox("imgTag")[0];
+        self.dragY = self.canvas.bbox("imgTag")[1];
+
+        self.dX = 0
+        self.dY = 0
 
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
@@ -808,13 +898,61 @@ class win_main(tkinter.Frame):
         self.projects.setSelectedLb(key)
         
     def onClick(self, event):
-        print ("%d, %d" %(event.x, event.y) )
+
+        x = self.canvas.canvasx(event.x) - self.dragX;
+        y = self.canvas.canvasy(event.y) - self.dragY;
+
+        if( (x < 0) or (y < 0) ):
+            return
+
+        limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
+        if( (x > limite[0]) or (y > limite[1]) ):
+            return
+
+        if ( self.projects.getSelectedLb() < 0 ):
+            print("não está selecionado")
+            return
+
+        colorHex = self.projects.getLabels(self.projects.getSelectedLb())[1]
+
+        colorRGB = tuple(int(colorHex.lstrip('#')[i:i+2], 16) for i in (0, 2 ,4))
+
+        #x = self.canvas.canvasx(event.x);
+        #y = self.canvas.canvasy(event.y);
+        
+        print ("%d, %d" %(x, y) )
+
+        img = self.projects.getImage(self.projects.getCurrImgID())
+        mask = self.projects.getMask(self.projects.getCurrImgID())
+
+        coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
+        img.putpixel( coord, colorRGB )
+        mask.putpixel( coord, colorRGB )
+
+        self.projects.setImage(self.projects.getCurrImgID(),img)
+        self.paint()
 
     def motion(self, event):
+
+        x = self.canvas.canvasx(event.x) - self.dragX;
+        y = self.canvas.canvasy(event.y) - self.dragY;
+
+        if( (x < 0) or (y < 0) ):
+            return
+
+        limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
+        if( (x > limite[0]) or (y > limite[1]) ):
+            return
+        
+        #x = self.canvas.canvasx(event.x);
+        #y = self.canvas.canvasy(event.y);
+
+        #print(self.canvas.bbox("imgTag"));
+        
         if( self.projects.isBatchImg() ):
-            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d \t\t Scale: %d%%" %(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y), self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
+            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d \t\t Scale: %d%%" %(x , y, self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
         else:
-            self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" %(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y), self.projects.getImgScale()*100)))
+            self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" %(x, y, self.projects.getImgScale()*100)))
         #self.status.pack()
 
     def moveImg(self, event):
@@ -841,6 +979,8 @@ class win_main(tkinter.Frame):
             res = self.projects.decreaseImgScale()
 
         if(res):
+            #self.dragX = 0;
+            #self.dragY = 0;
             self.redraw()
 
 #########################################################################
