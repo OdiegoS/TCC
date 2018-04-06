@@ -178,7 +178,7 @@ class Projects(object):
 
     def setImage(self, pos, img):
         self.images[pos] = img
-        self.masks[pos] = Image.new('RGBA', (img.width, img.height), (0,0,0,100))
+        self.masks[pos] = Image.new('RGBA', img.size, (0,0,0,100))
 
     def getPathCurrImg(self):
         if( type(self.imagePaths) is list):
@@ -275,8 +275,7 @@ class Projects(object):
         else:
             self.images = [Image.open(path)]
 
-        print("passou")
-        self.masks = [ (Image.new('RGBA', (self.images[0].width, self.images[0].height), (0,0,0,100)) ) ]
+        self.masks = [ (Image.new('RGBA', self.images[0].size, (0,0,0,100)) ) ]
             
         #self.currImg = -1
         self.currImgID = 0
@@ -316,8 +315,7 @@ class Projects(object):
 
             self.images.append(Image.open(path + "/" + filename))
 
-            print("passou")
-            self.masks.append(Image.new('RGBA', (self.images[-1].width, self.images[-1].height), (0,0,0,100)) )
+            self.masks.append(Image.new('RGBA', self.images[-1].size, (0,0,0,100)) )
             self.imagePaths.append(path + "/" + filename)
 
         self.lastBatchPath = path

@@ -539,6 +539,8 @@ class win_main(tkinter.Frame):
 
         self.parent.bind("<plus>", self.zoom)
         self.parent.bind("<minus>", self.zoom)
+        self.parent.bind("<KP_Add>", self.zoom) #Linux - Numpad
+        self.parent.bind("<KP_Subtract>", self.zoom) #Linux - Numpad
 
         #self.canvas.tag_bind("imgTag", "<ButtonPress-3>", self.buttonPress)
         #self.canvas.tag_bind("imgTag", "<B3-Motion>", self.buttonMove)
@@ -548,38 +550,53 @@ class win_main(tkinter.Frame):
         self.canvas.tag_bind("maskTag", "<ButtonRelease-3>", self.buttonRelease)
 
     def buttonPress(self, event):
-        self.canvasX = event.x
-        self.canvasY = event.y
+        self.canvasAtualX = event.x
+        self.canvasAtualY = event.y
 
-        self.atualX = self.canvas.canvasx(event.x)
-        self.atualY = self.canvas.canvasy(event.y)
+        self.imgAtualX = self.canvas.canvasx(event.x)
+        self.imgAtualY = self.canvas.canvasy(event.y)
+
+        #self.sumDeltaMov = [0,0]
         
         #self.canvas.scan_mark(self.canvasX, self.canvasY)
 
     def buttonRelease(self, event):
-        self.canvasX = 0
-        self.canvasY = 0
+        self.canvasAtualX = 0
+        self.canvasAtualY = 0
 
         self.dragX = self.dragX + self.dX;
         self.dragY = self.dragY + self.dY;
+
+        '''
+        self.canvas.deltaMov[0] = self.canvas.deltaMov[0] + self.sumDeltaMov[0]
+        self.canvas.deltaMov[1] = self.canvas.deltaMov[1] + self.sumDeltaMov[1]
+        #self.canvas.deltaMov[2] =  0
+        '''
+
         #print(self.dragY, self.dragX)
 
         #self.atualX = 0;
         #self.atualY = 0;
 
     def buttonMove(self, event):
-        deltaX = event.x - self.canvasX
-        deltaY = event.y - self.canvasY
+        deltaX = event.x - self.canvasAtualX
+        deltaY = event.y - self.canvasAtualY
 
-        self.dX = self.canvas.canvasx(event.x) - self.atualX
-        self.dY = self.canvas.canvasy(event.y) - self.atualY
+        self.dX = self.canvas.canvasx(event.x) - self.imgAtualX
+        self.dY = self.canvas.canvasy(event.y) - self.imgAtualY
 
         self.canvas.move("imgTag", deltaX, deltaY)
         self.canvas.move("maskTag", deltaX, deltaY)
         #self.canvas.scan_dragto(event.x, event.y, gain=1);
 
-        self.canvasX = event.x
-        self.canvasY = event.y
+        '''
+        self.sumDeltaMov = [self.sumDeltaMov[0] + deltaX,
+                            self.sumDeltaMov[1] + deltaY]
+        self.canvas.isMov = True
+        '''
+
+        self.canvasAtualX = event.x
+        self.canvasAtualY = event.y
         
     def changeColor(self, btn, i):
         color = askcolor()
@@ -621,6 +638,10 @@ class win_main(tkinter.Frame):
 
         self.dX = 0
         self.dY = 0
+        '''
+        self.canvas.deltaMov = [0,0, 0]
+        self.canvas.isMov = False
+        '''
 
         #print(self.canvas.bbox("imgTag"))
 
@@ -660,6 +681,10 @@ class win_main(tkinter.Frame):
 
         self.dX = 0
         self.dY = 0
+        '''
+        self.canvas.isMov = False
+        self.canvas.deltaMov = [0,0, 0]
+        '''
 
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
@@ -682,11 +707,14 @@ class win_main(tkinter.Frame):
         self.canvas.itemconfigure(self.canvas.imgID, image=self.canvas.image)
         self.canvas.itemconfigure(self.canvas.maskID, image=self.canvas.mask)
 
-        self.dragX = self.canvas.bbox("imgTag")[0];
-        self.dragY = self.canvas.bbox("imgTag")[1];
+        #self.canvas.move("imgTag", self.dragX, self.dragY)
+        #self.canvas.move("maskTag", self.dragX, self.dragY)
 
-        self.dX = 0
-        self.dY = 0
+        #self.dragX = self.canvas.bbox("imgTag")[0];
+        #self.dragY = self.canvas.bbox("imgTag")[1];
+
+        #self.dX = 0
+        #self.dY = 0
 
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
@@ -697,6 +725,21 @@ class win_main(tkinter.Frame):
         #self.imgScrollVertical.pack(side="right", fill="y")
         #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
+
+
+        '''
+        if(self.canvas.isMov):
+            self.canvas.move("imgTag", self.canvas.deltaMov[0], self.canvas.deltaMov[1])
+            self.canvas.move("maskTag", self.canvas.deltaMov[0], self.canvas.deltaMov[1])
+            #self.delta[2] = self.canvas.delta[2] + 1
+
+            self.dragX = self.dragX + self.canvas.deltaMov[0];
+            self.dragY = self.dragY + self.canvas.deltaMov[1];
+            
+            #print(self.delta[2])
+        '''
+        
+        
 
         
 #########################################################################
@@ -899,8 +942,24 @@ class win_main(tkinter.Frame):
         
     def onClick(self, event):
 
+        #print("######")
+
         x = self.canvas.canvasx(event.x) - self.dragX;
         y = self.canvas.canvasy(event.y) - self.dragY;
+
+        #print(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
+        #print(self.dragX, self.dragY)
+        #print(self.canvas.coords("imgTag"))
+        #print(self.canvas.deltaMov)
+        #print(self.canvas.canvasx(self.delta[0]), self.canvas.canvasy(self.delta[1]))
+        #print(self.canvas.canvasx(self.delta[0]) - (self.delta[0]*self.delta[2]), self.canvas.canvasy(self.delta[1]) - (self.delta[1]*self.delta[2]))
+
+        '''
+        #Para corrigir coordenadas quando refaz o movimento ao pintar a imagem
+        if(self.mudanca):
+            x = x - (self.dragX*self.delta[2])
+            y = y - ( (self.dragY-2) * self.delta[2])
+        '''
 
         if( (x < 0) or (y < 0) ):
             return
@@ -973,7 +1032,7 @@ class win_main(tkinter.Frame):
 
     
     def zoom(self,event):
-        if(event.keysym == "plus"):
+        if( (event.keysym == "plus") or (event.keysym == "KP_Add") ):
             res = self.projects.increaseImgScale()
         else:
             res = self.projects.decreaseImgScale()
