@@ -548,22 +548,24 @@ class win_main(tkinter.Frame):
         self.canvas.tag_bind("maskTag", "<ButtonRelease-3>", self.buttonRelease)
 
     def buttonPress(self, event):
-        self.canvasAtualX = event.x
-        self.canvasAtualY = event.y
+        self.canvas.scan_mark(event.x, event.y)
 
-        self.imgAtualX = self.canvas.canvasx(event.x)
-        self.imgAtualY = self.canvas.canvasy(event.y)
+        # self.canvasAtualX = event.x
+        # self.canvasAtualY = event.y
+        #
+        # self.imgAtualX = self.canvas.canvasx(event.x)
+        # self.imgAtualY = self.canvas.canvasy(event.y)
 
         #self.sumDeltaMov = [0,0]
         
         #self.canvas.scan_mark(self.canvasX, self.canvasY)
 
     def buttonRelease(self, event):
-        self.canvasAtualX = 0
-        self.canvasAtualY = 0
-
-        self.dragX = self.dragX + self.dX;
-        self.dragY = self.dragY + self.dY;
+        # self.canvasAtualX = 0
+        # self.canvasAtualY = 0
+        #
+        # self.dragX = self.dragX + self.dX;
+        # self.dragY = self.dragY + self.dY;
 
         '''
         self.canvas.deltaMov[0] = self.canvas.deltaMov[0] + self.sumDeltaMov[0]
@@ -577,15 +579,17 @@ class win_main(tkinter.Frame):
         #self.atualY = 0;
 
     def buttonMove(self, event):
-        deltaX = event.x - self.canvasAtualX
-        deltaY = event.y - self.canvasAtualY
+        # deltaX = event.x - self.canvasAtualX
+        # deltaY = event.y - self.canvasAtualY
 
-        self.dX = self.canvas.canvasx(event.x) - self.imgAtualX
-        self.dY = self.canvas.canvasy(event.y) - self.imgAtualY
+        # self.dX = self.canvas.canvasx(event.x) - self.imgAtualX
+        # self.dY = self.canvas.canvasy(event.y) - self.imgAtualY
 
-        self.canvas.move("imgTag", deltaX, deltaY)
-        self.canvas.move("maskTag", deltaX, deltaY)
+        # self.canvas.move("imgTag", deltaX, deltaY)
+        # self.canvas.move("maskTag", deltaX, deltaY)
         #self.canvas.scan_dragto(event.x, event.y, gain=1);
+
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
 
         '''
         self.sumDeltaMov = [self.sumDeltaMov[0] + deltaX,
@@ -593,8 +597,8 @@ class win_main(tkinter.Frame):
         self.canvas.isMov = True
         '''
 
-        self.canvasAtualX = event.x
-        self.canvasAtualY = event.y
+        # self.canvasAtualX = event.x
+        # self.canvasAtualY = event.y
         
     def changeColor(self, btn, i):
         color = askcolor()
