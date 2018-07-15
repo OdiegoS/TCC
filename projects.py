@@ -179,6 +179,9 @@ class Projects(object):
     def getMask(self, pos):
         return self.masks[pos]
 
+    def setMask(self, pos, mask):
+        self.masks[pos] = mask
+
     def setImage(self, pos, img):
         self.images[pos] = img
         self.masks[pos] = self.createMask(img.size)

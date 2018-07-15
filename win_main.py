@@ -4,12 +4,10 @@ import tkinter
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.colorchooser import *
-from PIL import Image
-from PIL import ImageTk
-import glob
 from tkinter.simpledialog import SimpleDialog
 from projects import Projects
- 
+
+
 class win_main(tkinter.Frame):
 
     def __init__(self,parent):
@@ -981,14 +979,15 @@ class win_main(tkinter.Frame):
         
         print ("%d, %d" %(x, y) )
 
-        img = self.projects.getImage(self.projects.getCurrImgID())
+        # img = self.projects.getImage(self.projects.getCurrImgID())
         mask = self.projects.getMask(self.projects.getCurrImgID())
 
         coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
-        img.putpixel( coord, colorRGB )
+        # img.putpixel( coord, colorRGB )
         mask.putpixel( coord, colorRGB )
 
-        self.projects.setImage(self.projects.getCurrImgID(),img)
+        # self.projects.setImage(self.projects.getCurrImgID(),img)
+        self.projects.setMask(self.projects.getCurrImgID(), mask)
         self.paint()
 
     def motion(self, event):
