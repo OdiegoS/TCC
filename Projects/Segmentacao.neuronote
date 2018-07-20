@@ -1,10 +1,43 @@
-daniel
-2
-daniel
-D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Versão Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa
-0
-diego
-D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Versão Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa/a12AL1_000.jpg
--1
-1 #ff0000 Comment_1
-2 #00ff00 Comment_2
+{
+    "users": [
+        [
+            "daniel",
+            "D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Vers\u00e3o Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa",
+            0
+        ],
+        [
+            "diego",
+            "D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Vers\u00e3o Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa/a12AL1_000.jpg",
+            -1
+        ]
+    ],
+    "currUser": [
+        "diego",
+        "D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Vers\u00e3o Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa/a12AL1_000.jpg",
+        -1
+    ],
+    "currUserID": 1,
+    "currImgID": 0,
+    "imagePaths": "D:/Arquivos/Bau/UFS - Universidade Federal de Sergipe/TCC/Vers\u00e3o Atual/Imagens_Demo/a12 obt layers contado/a12 AL layers 1 ( area reta)/a12 AL 1 layer IIIa/a12AL1_000.jpg",
+    "defaultPath": "Projects/",
+    "defaultExtension": ".neuronote",
+    "projectPath": "D:\\Arquivos\\Bau\\UFS - Universidade Federal de Sergipe\\TCC\\Vers\u00e3o Atual\\TCC\\Projects\\Segmentacao.neuronote",
+    "lastImagePath": null,
+    "lastBatchPath": null,
+    "selectedLb": -1,
+    "imgScale": 1.0,
+    "maxScale": 5.0,
+    "minScale": 0.25,
+    "scaleRate": 0.25,
+    "appPath": "D:\\Arquivos\\Bau\\UFS - Universidade Federal de Sergipe\\TCC\\Vers\u00e3o Atual\\TCC",
+    "labels": [
+        [
+            "Comment_1",
+            "#ff0000"
+        ],
+        [
+            "Comment_2",
+            "#00ff00"
+        ]
+    ]
+}

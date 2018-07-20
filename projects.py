@@ -3,6 +3,7 @@
 import os
 from PIL import Image
 from PIL import ImageTk
+import json
 
 class Projects(object):
 
@@ -30,7 +31,7 @@ class Projects(object):
         self.appPath = os.path.dirname(os.path.realpath(__file__))
 
         if (not os.path.isfile("settings") ):
-            file = open("settings","w")
+            file = open("settings","w", encoding='utf-8')
             file.close
 
         if (not os.path.isdir("Projects") ):
@@ -199,9 +200,16 @@ class Projects(object):
         #self.saveProject()
 
     def openSettings(self):
-        file = open("settings","r")
-        self.projectPath = file.read()
-        self.projectPath = self.projectPath
+        file = open("settings","r", encoding='utf-8')
+        # self.projectPath = file.read()
+        # self.projectPath = self.projectPath
+
+        try:
+            self.projectPath = json.load(file)
+        except ValueError:
+            self.projectPath = ""
+
+        # self.__setstate__(json.load(file))
         
         file.close()
 
@@ -215,25 +223,27 @@ class Projects(object):
         return self.projectPath
 
     def loadSettings(self):
-        file = open(self.projectPath,"r")
+        file = open(self.projectPath,"r", encoding='utf-8')
 
-        project = file.read().splitlines()
+        self.__setstate__(json.load(file))
+
+        # project = file.read().splitlines()
         file.close()
 
-        self.users = [[0,0,0]]
-
-        for i in range(2, 2*int(project[1])+int(project[1])+1, 3) :
-            if project[0] == project[i]:
-                self.currUserID = self.sizeUsers() - 1
-
-            self.users.append( [project[i], project[i+1], int(project[i+2]) ] )
-
-        del self.users[0]
-        self.updateCurrUser(self.currUserID)
-
-        data = project[2*int(project[1])+int(project[1])+2 : ]
-        
-        self.loadComments(data)
+        # self.users = [[0,0,0]]
+        #
+        # for i in range(2, 2*int(project[1])+int(project[1])+1, 3) :
+        #     if project[0] == project[i]:
+        #         self.currUserID = self.sizeUsers() - 1
+        #
+        #     self.users.append( [project[i], project[i+1], int(project[i+2]) ] )
+        #
+        # del self.users[0]
+        # self.updateCurrUser(self.currUserID)
+        #
+        # data = project[2*int(project[1])+int(project[1])+2 : ]
+        #
+        # self.loadComments(data)
 
     def updateImagePaths(self, path = None):
         if path == None:
@@ -253,19 +263,27 @@ class Projects(object):
         return False
 
     def newProject(self, projectName, userName):
-        file = open(self.defaultPath + projectName + self.defaultExtension,"w")
-        file.write(userName + "\n1\n" + userName + "\n/\n-1\n")
-        file.write("1 #ff0000 Comment_1\n2 #00ff00 Comment_2")
-        file.flush()
+        file = open(self.defaultPath + projectName + self.defaultExtension,"w", encoding='utf-8')
+        # file.write(userName + "\n1\n" + userName + "\n/\n-1\n")
+        # file.write("1 #ff0000 Comment_1\n2 #00ff00 Comment_2")
+        # file.flush()
+
+        self.users = [[userName, "/", -1]]
+        self.currUser = self.users[0]
+        self.currUserID = 0
+        self.labels = [["Comment_1", "#ff0000"], ["Comment_2", "#00ff00"]]
         file.close
 
         self.projectPath = self.appPath + "/" + self.defaultPath + projectName + self.defaultExtension
         self.updateLastProject()
 
+        json.dump(self.__getstate__(), file, indent=4)
+
     def updateLastProject(self):
-        file = open("settings","w")
-        file.write(self.projectPath)
-        file.flush()
+        file = open("settings","w", encoding='utf-8')
+        # file.write(self.projectPath)
+        # file.flush()
+        json.dump(self.projectPath, file, indent=4)
         file.close
 
     def updateProjectPath(self, path):
@@ -336,19 +354,21 @@ class Projects(object):
 
     def saveProject(self, path = None):
         if path == None:
-            file = open(self.projectPath,"w")
+            file = open(self.projectPath,"w", encoding='utf-8')
         else:
-            file = open(path,"w")
+            file = open(path,"w", encoding='utf-8')
 
-        file.write(self.currUser[0] + "\n%d\n" %(len(self.users)) )
+        # file.write(self.currUser[0] + "\n%d\n" %(len(self.users)) )
+        #
+        # for i in range(len(self.users)):
+        #     file.write("%s\n%s\n%d\n" %( self.users[i][0], self.users[i][1], self.users[i][2] ) )
+        #
+        # for i in range(len(self.labels)):
+        #     file.write("%d %s %s\n" %( i+1, self.labels[i][1], self.labels[i][0] ) )
+        #
+        # file.flush()
 
-        for i in range(len(self.users)):
-            file.write("%s\n%s\n%d\n" %( self.users[i][0], self.users[i][1], self.users[i][2] ) )
-
-        for i in range(len(self.labels)):
-            file.write("%d %s %s\n" %( i+1, self.labels[i][1], self.labels[i][0] ) )
-
-        file.flush()
+        json.dump(self.__getstate__(), file, indent=4)
         file.close()
 
     def setSelectedLb(self, key):
@@ -388,3 +408,13 @@ class Projects(object):
 
     def resetImgScale(self):
         self.imgScale = 1.0
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['images']
+        del state['imagePaths']
+        del state['masks']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
