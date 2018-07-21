@@ -24,10 +24,14 @@ class Projects(object):
         self.lastImagePath = None
         self.lastBatchPath = None
         self.selectedLb = -1
-        self.imgScale = 1.0
-        self.maxScale = 5.0
-        self.minScale = 0.25
-        self.scaleRate = 0.25
+
+        self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
+        self.currScale = self.imgScale.index(1)
+
+        # self.imgScale = 1.0
+        # self.maxScale = 5.0
+        # self.minScale = 0.25
+        # self.scaleRate = 0.25
         self.appPath = os.path.dirname(os.path.realpath(__file__))
 
         if (not os.path.isfile("settings") ):
@@ -388,26 +392,30 @@ class Projects(object):
         return newImg
 
     def increaseImgScale(self):
-        newScale = self.imgScale + self.scaleRate
-        if( newScale > self.maxScale):
+        # newScale = self.imgScale + self.scaleRate
+
+        newScale = self.currScale + 1
+
+        if( newScale >= len(self.imgScale)):
             return False
         
-        self.imgScale = newScale
+        self.currScale = newScale
         return True
 
     def decreaseImgScale(self):
-        newScale = self.imgScale - self.scaleRate
-        if( newScale < self.minScale):
+        # newScale = self.imgScale - self.scaleRate
+        newScale = self.currScale - 1
+        if( newScale < 0):
             return False
         
-        self.imgScale = newScale
+        self.currScale = newScale
         return True
 
     def getImgScale(self):
-        return self.imgScale
+        return self.imgScale[self.currScale]
 
     def resetImgScale(self):
-        self.imgScale = 1.0
+        self.currScale = self.imgScale.index(1)
 
     def __getstate__(self):
         state = self.__dict__.copy()

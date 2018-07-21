@@ -25,10 +25,16 @@
     "lastImagePath": null,
     "lastBatchPath": null,
     "selectedLb": -1,
-    "imgScale": 1.0,
-    "maxScale": 5.0,
-    "minScale": 0.25,
-    "scaleRate": 0.25,
+    "imgScale": [
+		0.125,
+		0.25,
+		0.5,
+		1,
+		2,
+		4,
+		8
+	],
+    "currScale": 3,
     "appPath": "D:\\Arquivos\\Bau\\UFS - Universidade Federal de Sergipe\\TCC\\Vers\u00e3o Atual\\TCC",
     "labels": [
         [
