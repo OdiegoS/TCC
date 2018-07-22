@@ -613,8 +613,12 @@ class win_main(tkinter.Frame):
 
     def refresh(self):
 
-        self.projects.resetImgScale()
-        
+        # self.projects.resetImgScale()
+
+        if(self.projects.getImgScale() != 1):
+            self.redraw()
+            return
+
         dimensionImg = self.projects.getDimensionCurrImg()
 
         self.canvas.config(width=dimensionImg[0], height=dimensionImg[1] )
