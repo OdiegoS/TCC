@@ -346,6 +346,9 @@ class win_main(tkinter.Frame):
         #self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
         self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
         self.status.pack(side='bottom', fill='x')
+
+        self.status.x = -1
+        self.status.y = -1
         
     def frameLabel(self):
         self.frameRight = tkinter.Frame(self.parent, bg= "orange")
@@ -651,13 +654,10 @@ class win_main(tkinter.Frame):
 
         #print(self.canvas.bbox("imgTag"))
 
-
         if( self.projects.isBatchImg() ):
-            self.status.configure(text=("X: -- \t Y: -- \t Z: %d / %d \t\t Scale: %d%%" %(self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
             self.projects.updateUserImg()
-        else:
-            self.status.configure(text=("X: -- \t Y: -- \t\t Scale: %d%%" % (self.projects.getImgScale()*100) ))
 
+        self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
 
     def redraw(self):
@@ -701,6 +701,8 @@ class win_main(tkinter.Frame):
         #self.imgScrollVertical.pack(side="right", fill="y")
         #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
+
+        self.updateStatus()
 
     def paint(self):
 
@@ -1000,8 +1002,8 @@ class win_main(tkinter.Frame):
 
     def motion(self, event):
 
-        x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
-        y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
+        self.status.x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
+        self.status.y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
 
         # if( (x < 0) or (y < 0) ):
         #     return
@@ -1015,11 +1017,14 @@ class win_main(tkinter.Frame):
 
         #print(self.canvas.bbox("imgTag"));
         
-        if( self.projects.isBatchImg() ):
-            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d \t\t Scale: %d%%" %(x , y, self.projects.getCurrImgID()+1, self.projects.sizeImages(), self.projects.getImgScale()*100 )))
-        else:
-            self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" %(x, y, self.projects.getImgScale()*100)))
+        self.updateStatus()
         #self.status.pack()
+
+    def updateStatus(self):
+        if (self.projects.isBatchImg()):
+            self.status.configure(text=("X: %d \t Y: %d \t Z: %d / %d \t\t Scale: %d%%" % (self.status.x, self.status.y, self.projects.getCurrImgID() + 1, self.projects.sizeImages(), self.projects.getImgScale() * 100)))
+        else:
+            self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" % (self.status.x, self.status.y, self.projects.getImgScale() * 100)))
 
     def moveImg(self, event):
         #print(self.currImg)
