@@ -996,15 +996,15 @@ class win_main(tkinter.Frame):
 
     def motion(self, event):
 
-        x = self.canvas.canvasx(event.x) - self.dragX;
-        y = self.canvas.canvasy(event.y) - self.dragY;
+        x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
+        y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
 
-        if( (x < 0) or (y < 0) ):
-            return
-
-        limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
-        if( (x > limite[0]) or (y > limite[1]) ):
-            return
+        # if( (x < 0) or (y < 0) ):
+        #     return
+        #
+        # limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
+        # if( (x > limite[0]) or (y > limite[1]) ):
+        #     return
         
         #x = self.canvas.canvasx(event.x);
         #y = self.canvas.canvasy(event.y);
