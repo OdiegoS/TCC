@@ -285,6 +285,7 @@ class win_main(tkinter.Frame):
         self.mnuProject.add_command(label="Open project file", command=self.abrirProj)
         self.mnuProject.add_command(label="Save Project",  command=self.projects.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
+        self.mnuProject.add_command(label="Save Annotation", command=self.saveAnnotation)
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
         self.mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
@@ -855,6 +856,9 @@ class win_main(tkinter.Frame):
                                                          ("All Files", "*.*") ) )
         self.projects.saveProject(res)
 
+    def saveAnnotation(self):
+        self.projects.saveAnnotation()
+
     def loadComments(self):
 
         """
@@ -991,13 +995,16 @@ class win_main(tkinter.Frame):
 
         # img = self.projects.getImage(self.projects.getCurrImgID())
         mask = self.projects.getMask(self.projects.getCurrImgID())
+        annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
         coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
         # img.putpixel( coord, colorRGB )
         mask.putpixel( coord, colorRGB )
+        annotation.putpixel(coord, self.projects.getSelectedLb() + 1)
 
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
+        self.projects.setAnnotation(self.projects.getCurrImgID(), annotation)
         self.paint()
 
     def motion(self, event):

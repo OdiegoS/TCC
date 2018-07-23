@@ -15,6 +15,7 @@ class Projects(object):
         self.currUserID = None
         self.currImgID = 0
         self.masks = []
+        self.annotation = []
         self.images = []
         self.imagePaths = None
         self.defaultPath = "Projects/"
@@ -71,6 +72,9 @@ class Projects(object):
 
     def createMask(self, size):
         return Image.new('RGBA', size, (0, 0, 0, 0))
+
+    def createAnnotation(self, size):
+        return Image.new('L', size, 0)
 
     def removeLabel(self):
         del self.labels[-1]
@@ -184,12 +188,19 @@ class Projects(object):
     def getMask(self, pos):
         return self.masks[pos]
 
+    def getAnnotation(self, pos):
+        return self.annotation[pos]
+
     def setMask(self, pos, mask):
         self.masks[pos] = mask
+
+    def setAnnotation(self, pos, annotation):
+        self.annotation[pos] = annotation
 
     def setImage(self, pos, img):
         self.images[pos] = img
         self.masks[pos] = self.createMask(img.size)
+        self.annotation[pos] = self.createAnnotation(img.size)
 
     def getPathCurrImg(self):
         if( type(self.imagePaths) is list):
@@ -256,6 +267,7 @@ class Projects(object):
             if(self.imagePaths == '/'):
                 del self.images[:]
                 del self.masks[:]
+                del self.annotation[:]
                 
         else:
             self.imagePaths = path
@@ -304,6 +316,7 @@ class Projects(object):
             self.images = [Image.open(path)]
 
         self.masks = [ (self.createMask(self.images[0].size) ) ]
+        self.annotation = [(self.createAnnotation(self.images[0].size))]
             
         #self.currImg = -1
         self.currImgID = 0
@@ -332,6 +345,7 @@ class Projects(object):
                 self.imagePaths = []
                 self.images = []
                 self.masks = []
+                self.annotation = []
                 
                 if(path == None):
                     self.currImgID = int(self.currUser[2])
@@ -344,6 +358,7 @@ class Projects(object):
             self.images.append(Image.open(path + "/" + filename))
 
             self.masks.append(self.createMask(self.images[-1].size) )
+            self.annotation.append(self.createAnnotation(self.images[-1].size))
             self.imagePaths.append(path + "/" + filename)
 
         self.lastBatchPath = path
@@ -374,6 +389,29 @@ class Projects(object):
 
         json.dump(self.__getstate__(), file, indent=4)
         file.close()
+
+    def saveAnnotation(self):
+        if(self.isBatchImg()):
+            path = self.imagePaths[0]
+        else:
+            path = self.imagePaths
+
+        pos = [path.replace("\\", "/")[::-1].find("/"), path[::-1].find(".")]
+        diretorio = path[:-pos[0]] + "gt_" + self.currUser[0]
+
+        if (not os.path.isdir(diretorio) ):
+            os.makedirs(diretorio)
+
+        if (self.isBatchImg()):
+            annotationDir = []
+            for imageBath in self.imagePaths:
+                annotationDir.append(diretorio + "/gt_" + imageBath[-pos[0]:-pos[1]] + "png")
+        else:
+            annotationDir = [diretorio + "/gt_" + path[-pos[0]:-pos[1]] + "png"]
+
+        for i in range(len(self.annotation)):
+            self.annotation[i].save(annotationDir[i])
+
 
     def setSelectedLb(self, key):
         self.selectedLb = key
