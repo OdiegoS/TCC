@@ -677,6 +677,7 @@ class win_main(tkinter.Frame):
         if( (dimensionImg[1] % 2) > 0):
             tam[1] = tam[1] + 1;
 
+        self.canvas.config(width=size[0], height=size[1])
 
         self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
         self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
@@ -979,7 +980,7 @@ class win_main(tkinter.Frame):
         limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
         if( (x > limite[0]) or (y > limite[1]) ):
             return
-
+        
         if ( self.projects.getSelectedLb() < 0 ):
             print("não está selecionado")
             return
@@ -1018,7 +1019,7 @@ class win_main(tkinter.Frame):
         # limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
         # if( (x > limite[0]) or (y > limite[1]) ):
         #     return
-        
+
         #x = self.canvas.canvasx(event.x);
         #y = self.canvas.canvasy(event.y);
 
