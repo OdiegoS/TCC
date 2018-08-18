@@ -630,12 +630,12 @@ class win_main(tkinter.Frame):
         self.canvas.image = self.projects.getCurrImg()
         self.canvas.mask = self.projects.getCurrMask()
 
-        tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
-        if( (dimensionImg[0] % 2) > 0):
-            tam[0] = tam[0] + 1;
-        if( (dimensionImg[1] % 2) > 0):
-            tam[1] = tam[1] + 1;
-
+        tam = [ int(dimensionImg[0] / 2), int(dimensionImg[1] / 2) ]
+        # tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
+        # if( (dimensionImg[0] % 2) > 0):
+        #     tam[0] = tam[0] + 1;
+        # if( (dimensionImg[1] % 2) > 0):
+        #     tam[1] = tam[1] + 1;
 
         #self.canvas.mask = Image.new('RGBA', dimensionImg, (0,0,0,0))
         #self.canvas.mask = ImageTk.PhotoImage(self.canvas.mask)
@@ -644,8 +644,8 @@ class win_main(tkinter.Frame):
         self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
         self.canvas.pack(fill='both', expand=True)
 
-        self.dragX = self.canvas.bbox("imgTag")[0];
-        self.dragY = self.canvas.bbox("imgTag")[1];
+        # self.dragX = self.canvas.bbox("imgTag")[0];
+        # self.dragY = self.canvas.bbox("imgTag")[1];
 
         self.dX = 0
         self.dY = 0
@@ -672,19 +672,19 @@ class win_main(tkinter.Frame):
         self.canvas.image = self.projects.getCurrImgResize(size)
         self.canvas.mask = self.projects.getCurrMaskResize(size)
 
-        tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
-        if( (dimensionImg[0] % 2) > 0):
-            tam[0] = tam[0] + 1;
-        if( (dimensionImg[1] % 2) > 0):
-            tam[1] = tam[1] + 1;
+        tam = [ int(size[0] / 2), int(size[1] / 2)]
+        # if( (dimensionImg[0] % 2) > 0):
+        #     tam[0] = tam[0] + 1;
+        # if( (dimensionImg[1] % 2) > 0):
+        #     tam[1] = tam[1] + 1;
 
         self.canvas.config(width=size[0], height=size[1])
 
         self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
         self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
 
-        self.dragX = self.canvas.bbox("imgTag")[0];
-        self.dragY = self.canvas.bbox("imgTag")[1];
+        #self.dragX = self.canvas.bbox("imgTag")[0];
+        #self.dragY = self.canvas.bbox("imgTag")[1];
 
         #print(self.canvas.bbox("imgTag"))
 
@@ -958,8 +958,11 @@ class win_main(tkinter.Frame):
 
         #print("######")
 
-        x = self.canvas.canvasx(event.x) - self.dragX;
-        y = self.canvas.canvasy(event.y) - self.dragY;
+        # x = self.canvas.canvasx(event.x) - self.dragX;
+        # y = self.canvas.canvasy(event.y) - self.dragY;
+
+        x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale());
+        y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale());
 
         #print(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         #print(self.dragX, self.dragY)
@@ -978,7 +981,8 @@ class win_main(tkinter.Frame):
         if( (x < 0) or (y < 0) ):
             return
 
-        limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
+        #limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
+        limite = [(self.canvas.bbox("imgTag")[2] / self.projects.getImgScale()) - 1, (self.canvas.bbox("imgTag")[3] / self.projects.getImgScale()) - 1]
         if( (x > limite[0]) or (y > limite[1]) ):
             return
 
@@ -999,7 +1003,8 @@ class win_main(tkinter.Frame):
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
-        coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
+        #coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
+        coord = (x,y)
         # img.putpixel( coord, colorRGB )
         mask.putpixel( coord, colorRGB )
         annotation.putpixel(coord, self.projects.getSelectedLb() + 1)
@@ -1011,13 +1016,18 @@ class win_main(tkinter.Frame):
 
     def motion(self, event):
 
-        x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
-        y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
+        # x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
+        # y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
+
+        x = self.canvas.canvasx(event.x) / self.projects.getImgScale()
+        y = self.canvas.canvasy(event.y) / self.projects.getImgScale()
 
         if( (x < 0) or (y < 0) ):
             return
 
-        limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
+        #limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
+        limite = [ (self.canvas.bbox("imgTag")[2] / self.projects.getImgScale()) - 1, (self.canvas.bbox("imgTag")[3] / self.projects.getImgScale()) - 1]
+
         if( (x > limite[0]) or (y > limite[1]) ):
             return
 
