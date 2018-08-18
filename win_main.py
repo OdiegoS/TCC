@@ -616,6 +616,7 @@ class win_main(tkinter.Frame):
         self.projects.updateLabelColor(i, color[1])
 
     def refresh(self):
+        self.canvas.delete("all")
 
         # self.projects.resetImgScale()
 
@@ -980,7 +981,7 @@ class win_main(tkinter.Frame):
         limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ] 
         if( (x > limite[0]) or (y > limite[1]) ):
             return
-        
+
         if ( self.projects.getSelectedLb() < 0 ):
             print("não está selecionado")
             return
