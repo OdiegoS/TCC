@@ -460,6 +460,7 @@ class Projects(object):
         del state['images']
         del state['imagePaths']
         del state['masks']
+        del state['annotation']
         return state
 
     def __setstate__(self, state):
