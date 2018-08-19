@@ -47,10 +47,49 @@ class win_main(tkinter.Frame):
             self.createProj()
             return
         self.loadSettings()
-        
+
+
+    def chooseAction(self):
+        createWin = tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge')
+        createWin.title("")
+        centralized = [(self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55]
+        createWin.geometry('+%d+%d' % (centralized[0], centralized[1]))
+        createWin.minsize(100,100)
+        createWin.resizable(width=False, height=False)
+        createWin.focus_force()
+        createWin.grab_set()
+
+        createWin.grid_columnconfigure(0, minsize=50)
+        createWin.grid_columnconfigure(3, minsize=50)
+
+        btnNewProject = tkinter.Button(createWin, text="Create a new project", bg="green")
+        btnNewProject.grid(row=2, column=1)
+        createWin.grid_rowconfigure(btnNewProject, minsize=50)
+
+        btnOpenProject = tkinter.Button(createWin, text="Open a project", bg="red")
+        btnOpenProject.grid(row=4, column=1)
+        createWin.grid_rowconfigure(btnOpenProject, minsize=50)
+
+        btnNewProject['command'] = lambda btn=[createWin, True]: self.choooseActionEvent(btn)
+        btnOpenProject['command'] = lambda btn=[createWin, False]: self.choooseActionEvent(btn)
+
+    def choooseActionEvent(self, param):
+
+        if(param[1]):
+            self.createProj()
+        else:
+            self.abrirProj()
+
+        param[0].destroy()
 
     def loadSettings(self, new = False):
-         
+
+        if (not self.projects.isProjectExist()):
+            tkinter.messagebox.showwarning("Warning", "Recent project not found.\nPlease, click in OK and create a new project or open an existing project.")
+            self.chooseAction()
+            return
+
+
         self.projects.loadSettings()
 
         #listUsers = project[0:-1]

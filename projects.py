@@ -237,6 +237,9 @@ class Projects(object):
     def getProjectPath(self):
         return self.projectPath
 
+    def isProjectExist(self):
+        return os.path.isfile(self.projectPath)
+
     def loadSettings(self):
         file = open(self.projectPath,"r", encoding='utf-8')
 
