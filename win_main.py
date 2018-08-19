@@ -248,6 +248,10 @@ class win_main(tkinter.Frame):
 
         if(new == None):
             return
+
+        if (len(new.replace(" ", "")) == 0):
+            tkinter.messagebox.showwarning("Warning", "The user name can't be empty.\n")
+            return
         
         for i in range(0, self.projects.sizeUsers() ):
             self.User_radio[i].destroy()
@@ -486,7 +490,11 @@ class win_main(tkinter.Frame):
 
         if(comment == None):
             return
-        
+
+        if (len(comment.replace(" ", "")) == 0):
+            tkinter.messagebox.showwarning("Warning", "Comments can't be empty.\n")
+            return
+
         self.lb_comment[i].set(comment)
         self.projects.updateLabelComment(i, comment)
 
