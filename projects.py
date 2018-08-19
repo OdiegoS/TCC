@@ -327,6 +327,8 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
+        self.resetImgScale()
+
         #self.saveProject()
 
     def openBatch(self, path = None):
@@ -369,6 +371,8 @@ class Projects(object):
         self.users[ self.currUserID ][1] = path
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
+
+        self.resetImgScale()
 
         #self.saveProject()
 
