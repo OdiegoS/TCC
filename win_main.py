@@ -815,10 +815,6 @@ class win_main(tkinter.Frame):
         newWin_entUser = tkinter.Entry(createWin)
         newWin_entUser.grid(row = 1, column = 1)
 
-        newUsers = []
-        newWin_addUser = tkinter.Button(createWin, text="Insert other specialist", bg="yellow")
-        newWin_addUser.grid(row=2, column = 1)
-
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3, bg = "green")
         newWin_btnOK['command'] = lambda btn = [newWin_entProj, newWin_entUser, createWin]: self.newWinConfirm(btn)
         newWin_btnOK.grid(row = 3, column = 0)
