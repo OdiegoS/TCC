@@ -120,16 +120,27 @@ class win_main(tkinter.Frame):
         #tkinter.messagebox.showinfo(message="Opening Project: %s" %(self.dir.split(".neuronote")[0] ) )
         tkinter.messagebox.showinfo(message="Opening Project")
 
-        chooseWindow= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
-        chooseWindow.title("Who are you?")
-        centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
-        chooseWindow.geometry('250x110+%d+%d' %(centralized[0], centralized[1]) )
-        chooseWindow.resizable(width=False, height=False)
-        chooseWindow.focus_force()
-        chooseWindow.grab_set()
+        topChooseWindow= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
+        topChooseWindow.title("Who are you?")
+        topChooseWindow.resizable(width=False, height=False)
+        topChooseWindow.focus_force()
+        topChooseWindow.grab_set()
+
+        self.canvasWin = tkinter.Canvas(topChooseWindow)
+        chooseWindow = tkinter.Frame(self.canvasWin)
+        vsb = tkinter.Scrollbar(topChooseWindow, orient="vertical", command=self.canvasWin.yview)
+        hsb = tkinter.Scrollbar(topChooseWindow, orient="horizontal", command=self.canvasWin.xview)
+        self.canvasWin.configure(xscrollcommand=hsb.set, yscrollcommand=vsb.set)
+
+        hsb.pack(side="bottom", fill="x")
+        vsb.pack(side="right", fill="y")
+        self.canvasWin.pack(side="left", fill="both", expand=True)
+        self.canvasWin.create_window((0, 0), window=chooseWindow, anchor="nw", tags="chooseWindow")
+
+        chooseWindow.bind("<Configure>", self.onChooseWindowConfigure)
 
         chWin_lb = tkinter.Label(chooseWindow, text="What's your name?", anchor="center")
-        chWin_lb.grid(row = 0, column = 0, padx = 70)
+        chWin_lb.grid(row = 0, column = 0, padx = 52)
 
         chWin_radio = []
         var = tkinter.IntVar()
@@ -137,19 +148,38 @@ class win_main(tkinter.Frame):
                 
             chWin_radio.append(tkinter.Radiobutton(chooseWindow, text=self.projects.getUserName(i), variable = var, value=i) )
             chWin_radio[i]['command'] = lambda radio = var: self.radioSelected(radio)
-            chWin_radio[i].grid(row = i+1, column = 0, padx = 70)
+            chWin_radio[i].grid(row = i+1, column = 0, padx = 52)
 
         chWin_radio[ self.projects.currUserID ].select()
         #self.user = var.get()
 
-        chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=3, bg = "green")
-        chWin_btnConfirm['command'] = lambda btn = chooseWindow: self.confirmUser(btn)
-        chWin_btnConfirm.grid(row = len(chWin_radio)+2, column = 0, padx = 70)
+        chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10, bg = "green")
+        chWin_btnConfirm['command'] = lambda btn = topChooseWindow: self.confirmUser(btn)
+        chWin_btnConfirm.grid(row = len(chWin_radio)+2, column = 0, padx = 52, pady = 10)
+
+        screen_width = self.parent.winfo_screenwidth() / 2
+        screen_height = self.parent.winfo_screenheight() / 2
+
+        size = [topChooseWindow.winfo_reqwidth(), topChooseWindow.winfo_reqheight()]
+        x = screen_width - (size[0] / 2)
+        y = screen_height - (size[1] / 2)
+
+        if( (size[0] + x) < 824):
+            size[0] = size[0] + 824 - (size[0] + x)
+
+        if( i < 4):
+            size[1] = size[1] - (50 - ((i-1) * 22))
+        topChooseWindow.geometry("%dx%d+%d+%d" % (size[0], size[1], x, y))
+
+    def onChooseWindowConfigure(self, event):
+        self.canvasWin.configure(scrollregion=self.canvasWin.bbox("all"))
 
     def radioSelected(self, param):    
         self.projects.updateCurrUser(param.get())
 
     def confirmUser(self, window):
+        self.canvasWin = None
+        del(self.canvasWin)
         window.destroy()
         tkinter.messagebox.showinfo(message="Welcome back %s" %(self.projects.getCurrUserName()) )
         self.loadUser()
