@@ -782,6 +782,29 @@ class win_main(tkinter.Frame):
         #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
 
+
+        coord = [(self.status.x * self.projects.getImgScale() + 1) / size[0], (self.status.y * self.projects.getImgScale() + 1) / size[1]]
+
+        self.canvas.xview_moveto(coord[0])
+        self.canvas.yview_moveto(coord[1])
+
+        self.imgScrollHorizontal.update()
+        self.imgScrollVertical.update()
+
+        tamScroll = [self.imgScrollHorizontal.get()[1] - self.imgScrollHorizontal.get()[0], self.imgScrollVertical.get()[1] - self.imgScrollVertical.get()[0] ]
+        valor = [10,10]
+
+        if ((tamScroll[0] + coord[0]) > 1.0):
+            valor[0] = int((tamScroll[0] + coord[0] - 1.0) * size[0])
+            valor[0] = int(valor[0])
+
+        if( (tamScroll[1] + coord[1]) > 1.0):
+            valor[1] = int((tamScroll[1] + coord[1] - 1.0) * size[1])
+            valor[1] = int(valor[1])
+
+        self.canvas.scan_mark(valor[0], valor[1])
+        self.canvas.scan_dragto(self.eventX, self.eventY, 1)
+
         self.updateStatus()
 
     def paint(self):
@@ -1091,6 +1114,9 @@ class win_main(tkinter.Frame):
 
         # x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
         # y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
+
+        self.eventX = event.x
+        self.eventY = event.y
 
         x = self.canvas.canvasx(event.x) / self.projects.getImgScale()
         y = self.canvas.canvasy(event.y) / self.projects.getImgScale()
