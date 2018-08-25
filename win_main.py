@@ -1057,6 +1057,12 @@ class win_main(tkinter.Frame):
         # x = self.canvas.canvasx(event.x) - self.dragX;
         # y = self.canvas.canvasy(event.y) - self.dragY;
 
+        if( (event.x < 10) or (event.y < 10)):
+            return
+
+        if( (event.x > (self.canvas.winfo_width() - 10)) or (event.y > (self.canvas.winfo_height() - 10)) ):
+            return
+
         x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale());
         y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale());
 
@@ -1114,6 +1120,12 @@ class win_main(tkinter.Frame):
 
         # x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
         # y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
+
+        if( (event.x < 10) or (event.y < 10)):
+            return
+
+        if( (event.x > (self.canvas.winfo_width() - 10)) or (event.y > (self.canvas.winfo_height() - 10)) ):
+            return
 
         self.eventX = event.x
         self.eventY = event.y
