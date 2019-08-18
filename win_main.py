@@ -6,6 +6,9 @@ from tkinter import filedialog
 from tkinter.colorchooser import *
 from tkinter.simpledialog import SimpleDialog
 from projects import Projects
+from watershed_flooding import Watershed
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class win_main(tkinter.Frame):
@@ -1063,8 +1066,8 @@ class win_main(tkinter.Frame):
         if( (event.x > (self.canvas.winfo_width() - 10)) or (event.y > (self.canvas.winfo_height() - 10)) ):
             return
 
-        x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale());
-        y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale());
+        x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale())
+        y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale())
 
         #print(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         #print(self.dragX, self.dragY)
@@ -1106,10 +1109,17 @@ class win_main(tkinter.Frame):
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
         #coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
-        coord = (x,y)
-        # img.putpixel( coord, colorRGB )
-        mask.putpixel( coord, colorRGB )
-        annotation.putpixel(coord, self.projects.getSelectedLb() + 1)
+        #coord = (x,y)
+
+        size = self.projects.getDimensionCurrImg()
+        w = Watershed()
+        tam = self.projects.TAM
+        imgTeste = self.projects.getImage(self.projects.getCurrImgID())
+        coord = w.start(imgTeste, size[1], size[0], x, y, tam)
+
+        for c in coord:
+            mask.putpixel( (x + c[0] - tam, y + c[1] - tam), colorRGB )
+            annotation.putpixel( (x + c[0] - tam, y + c[1] - tam), self.projects.getSelectedLb() + 1)
 
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)

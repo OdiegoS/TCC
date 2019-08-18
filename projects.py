@@ -25,6 +25,7 @@ class Projects(object):
         self.lastImagePath = None
         self.lastBatchPath = None
         self.selectedLb = -1
+        self.TAM = 50
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
         self.currScale = self.imgScale.index(1)
