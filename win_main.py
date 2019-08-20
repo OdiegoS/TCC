@@ -1159,6 +1159,11 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
+        tam = self.projects.TAM
+        if hasattr(self.canvas, 'rect'):
+            self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
+        else:
+            self.canvas.rect = self.canvas.create_rectangle(x-tam, y-tam, x+tam, y+tam, outline = "black")
         
         self.updateStatus()
         #self.status.pack()
