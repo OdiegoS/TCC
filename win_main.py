@@ -1115,7 +1115,7 @@ class win_main(tkinter.Frame):
         w = Watershed()
         tam = self.projects.TAM
         imgTeste = self.projects.getImage(self.projects.getCurrImgID())
-        coord = w.start(imgTeste, size[1], size[0], x, y, tam)
+        coord = w.start(imgTeste, size[0], size[1], x, y, tam)
 
         for c in coord:
             mask.putpixel( (x + c[0] - tam, y + c[1] - tam), colorRGB )

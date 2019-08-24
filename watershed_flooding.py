@@ -15,8 +15,8 @@ class Watershed(object):
    def __init__(self):
       self.HFQ = []
       
-   def start(self, image, height, width, x, y, tam):
-      img = image.crop( (max(0, x-tam), max(0, y-tam), min(height, x+tam), min(width, y+tam)) )
+   def start(self, image, width, height, x, y, tam):
+      img = image.crop( (max(0, x-tam), max(0, y-tam), min(width, x+tam), min(height, y+tam)) )
       size = img.size
       img = img.convert('L')
 
@@ -26,9 +26,9 @@ class Watershed(object):
       gradient = ImageChops.difference(dilate, erode)
 
       image = np.array(gradient)
-      return  self.watershed(image, size[1], size[0], tam)
+      return  self.watershed(image, size[0], size[1], tam)
 
-   def watershed (self, image, height, width, tam):
+   def watershed (self, image, width, height, tam):
       cent = tam
       tam = tam*2
       self.L = np.zeros((height, width), np.int32)
@@ -51,17 +51,17 @@ class Watershed(object):
       
       while len(self.HFQ) > 0:
          p = self.outHFQ()
-         vizinhos = self.neighbors(height, width, p[0])
+         vizinhos = self.neighbors(width, height, p[0])
          for pixels in vizinhos:
             if(self.L[pixels[0]][pixels[1]] == 0):
                self.L[pixels[0]][pixels[1]] = self.L[p[0][0]][p[0][1]]
                self.inHFQ(pixels, image[pixels[0]][pixels[1]])
                if(self.L[p[0][0]][p[0][1]] == 1):
-                  lista.append([pixels[0], pixels[1]])
+                  lista.append([pixels[1], pixels[0]])
 
       return lista
       
-   def neighbors(self, height, width, pixel):
+   def neighbors(self, width, height, pixel):
       return np.mgrid[
             max(0, pixel[0] - 1):min(height, pixel[0] + 2),
             max(0, pixel[1] - 1):min(width, pixel[1] + 2)
