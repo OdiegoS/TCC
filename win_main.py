@@ -741,6 +741,8 @@ class win_main(tkinter.Frame):
 
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
+        tam = self.projects.TAM
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
 
     def redraw(self):
         self.canvas.delete("all")
@@ -809,6 +811,8 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
+        tam = self.projects.TAM
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
 
     def paint(self):
 
@@ -1160,10 +1164,7 @@ class win_main(tkinter.Frame):
 
         #print(self.canvas.bbox("imgTag"));
         tam = self.projects.TAM
-        if hasattr(self.canvas, 'rect'):
-            self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
-        else:
-            self.canvas.rect = self.canvas.create_rectangle(x-tam, y-tam, x+tam, y+tam, outline = "black")
+        self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
         
         self.updateStatus()
         #self.status.pack()
