@@ -17,6 +17,7 @@ class Watershed(object):
       
    def start(self, image, width, height, x, y, tam):
       img = image.crop( (max(0, x-tam), max(0, y-tam), min(width, x+tam), min(height, y+tam)) )
+      cent = [min(y, tam), min(x, tam)]
       size = img.size
       img = img.convert('L')
 
@@ -26,28 +27,27 @@ class Watershed(object):
       gradient = ImageChops.difference(dilate, erode)
 
       image = np.array(gradient)
-      return  self.watershed(image, size[0], size[1], tam)
+      return  self.watershed(image, size[0], size[1], cent)
 
-   def watershed (self, image, width, height, tam):
-      cent = tam
-      tam = tam*2
+   def watershed (self, image, width, height, cent):
       self.L = np.zeros((height, width), np.int32)
       lista = []
       
-      self.L[cent][cent] = 1
-      self.HFQ.append([(cent,cent), 0])
-      lista.append([cent,cent])
+      self.L[cent[0]][cent[1]] = 1
+      self.HFQ.append([(cent[0],cent[1]), 0])
+      lista.append([cent[1],cent[0]])
 
-      for k in range(tam):
+      for k in range(width):
          self.L[0][k] = 2
          self.HFQ.append([(0,k), 0])
-         self.L[tam-1][k] = 2
-         self.HFQ.append([(tam-1,k), 0])
+         self.L[height-1][k] = 2
+         self.HFQ.append([(height-1,k), 0])
 
+      for k in range(height):
          self.L[k][0] = 2
          self.HFQ.append([(k,0), 0])
-         self.L[k][tam-1] = 2
-         self.HFQ.append([(k,tam-1), 0])
+         self.L[k][width-1] = 2
+         self.HFQ.append([(k,width-1), 0])
       
       while len(self.HFQ) > 0:
          p = self.outHFQ()

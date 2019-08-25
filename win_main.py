@@ -1121,9 +1121,12 @@ class win_main(tkinter.Frame):
         imgTeste = self.projects.getImage(self.projects.getCurrImgID())
         coord = w.start(imgTeste, size[0], size[1], x, y, tam)
 
+        limite_x = max(0, x-tam)
+        limite_y = max(0, y-tam)
+
         for c in coord:
-            mask.putpixel( (x + c[0] - tam, y + c[1] - tam), colorRGB )
-            annotation.putpixel( (x + c[0] - tam, y + c[1] - tam), self.projects.getSelectedLb() + 1)
+            mask.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
+            annotation.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
 
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
