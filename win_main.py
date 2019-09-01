@@ -6,6 +6,9 @@ from tkinter import filedialog
 from tkinter.colorchooser import *
 from tkinter.simpledialog import SimpleDialog
 from projects import Projects
+from watershed_flooding import Watershed
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class win_main(tkinter.Frame):
@@ -738,6 +741,8 @@ class win_main(tkinter.Frame):
 
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
+        tam = self.projects.TAM
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
 
     def redraw(self):
         self.canvas.delete("all")
@@ -806,6 +811,8 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
+        tam = self.projects.TAM
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
 
     def paint(self):
 
@@ -1063,8 +1070,8 @@ class win_main(tkinter.Frame):
         if( (event.x > (self.canvas.winfo_width() - 10)) or (event.y > (self.canvas.winfo_height() - 10)) ):
             return
 
-        x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale());
-        y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale());
+        x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale())
+        y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale())
 
         #print(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         #print(self.dragX, self.dragY)
@@ -1106,10 +1113,20 @@ class win_main(tkinter.Frame):
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
         #coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
-        coord = (x,y)
-        # img.putpixel( coord, colorRGB )
-        mask.putpixel( coord, colorRGB )
-        annotation.putpixel(coord, self.projects.getSelectedLb() + 1)
+        #coord = (x,y)
+
+        size = self.projects.getDimensionCurrImg()
+        w = Watershed()
+        tam = self.projects.TAM
+        imgTeste = self.projects.getImage(self.projects.getCurrImgID())
+        coord = w.start(imgTeste, size[0], size[1], x, y, tam)
+
+        limite_x = max(0, x-tam)
+        limite_y = max(0, y-tam)
+
+        for c in coord:
+            mask.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
+            annotation.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
 
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
@@ -1149,6 +1166,8 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
+        tam = self.projects.TAM
+        self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
         
         self.updateStatus()
         #self.status.pack()
