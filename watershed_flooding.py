@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from skimage import filters
 from scipy import ndimage
 import time
+import cv2
 
 
 class Watershed(object):
@@ -21,12 +22,12 @@ class Watershed(object):
       size = img.size
       img = img.convert('L')
 
-      dilate = img.filter(ImageFilter.MaxFilter(3))
-      erode = img.filter(ImageFilter.MinFilter(3))
+      kernel = np.ones((3,3), np.uint8)
 
-      gradient = ImageChops.difference(dilate, erode)
-
+      img = np.array(img) 
+      gradient = cv2.morphologyEx(img,cv2.MORPH_GRADIENT, kernel)
       image = np.array(gradient)
+
       return  self.watershed(image, size[0], size[1], cent)
 
    def watershed (self, image, width, height, cent):
@@ -60,7 +61,7 @@ class Watershed(object):
                   lista.append([pixels[1], pixels[0]])
 
       return lista
-      
+
    def neighbors(self, width, height, pixel):
       return np.mgrid[
             max(0, pixel[0] - 1):min(height, pixel[0] + 2),
@@ -84,29 +85,34 @@ if __name__ == "__main__":
    img2 = Image.open("demo-wsh.png").convert('RGBA')
    img3 = Image.open("demo-wsh.png").convert('RGBA')
 
-   dilate = img.filter(ImageFilter.MaxFilter(3))
-   erode = img.filter(ImageFilter.MinFilter(3))
-
-   gradient = ImageChops.difference(dilate, erode)
-   gradient2 = ImageChops.difference(erode, dilate)
-
-   #gradient.show()
-   #plt.imshow(gradient)
-   #plt.show()
+   cent = [50, 50]
+   size = img.size
+   img = np.array(img) 
+   ksize = 3
+   kernel = np.ones((ksize,ksize), np.uint8)
    
-   width, height = img.size
+   gradient = cv2.morphologyEx(img,cv2.MORPH_GRADIENT, kernel)
+
+   #gradient = cv2.Laplacian(img, cv2.CV_64F, ksize = ksize)
+   #gradient = np.uint8(np.absolute( cv2.Laplacian(img, cv2.CV_64F, ksize = ksize) ))
+   #gradient = np.int32(np.absolute( cv2.Laplacian(img, cv2.CV_64F, ksize = ksize) ))  #ksize 7
    
+   #gradient = cv2.Sobel(img,cv2.CV_64F,1,0,ksize= ksize)
+   #gradient = np.uint8(np.absolute( cv2.Sobel(img,cv2.CV_64F,1,0,ksize= ksize) ))
+   #gradient = np.int32(np.absolute( cv2.Sobel(img,cv2.CV_64F,1,0,ksize= ksize) )) #ksize 7,9,11,13,15
 
-   image = np.array(gradient)
-
-   start = time.time()
-   image = w.start (image, height, width, 50)
-
-   end = time.time()
-   print(end - start)
+   #gradient = cv2.Sobel(img,cv2.CV_64F,0,1,ksize= ksize)
+   #gradient = np.uint8(np.absolute( cv2.Sobel(img,cv2.CV_64F,0,1,ksize= ksize) ))
+   #gradient = np.int32(np.absolute( cv2.Sobel(img,cv2.CV_64F,0,1,ksize= ksize) )) #ksize 9
    
-   for h in range(height):
-      for w in range(width):
+   #gradient = cv2.Sobel(img,cv2.CV_64F,1,1,ksize= ksize)
+   #gradient = np.uint8(np.absolute( cv2.Sobel(img,cv2.CV_64F,0,1,ksize=ksize) ))
+   #gradient = np.int32(np.absolute( cv2.Sobel(img,cv2.CV_64F,0,1,ksize=ksize) )) #ksize 9
+
+   image = w.watershed(gradient, size[0], size[1], cent)
+
+   for h in range(size[1]):
+      for w in range(size[0]):
          color = img3.getpixel((h,w))
          color = list(color)
          color[3] = 0
