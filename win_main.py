@@ -1118,6 +1118,30 @@ class win_main(tkinter.Frame):
         size = self.projects.getDimensionCurrImg()
         w = Watershed()
         tam = self.projects.TAM
+
+        imgTeste = []
+
+        qtde = self.projects.sizeImages()
+        for i in range(qtde):
+            imgTeste.append(self.projects.getImage(i))
+
+        coord = w.start_3D(imgTeste, size[0], size[1], x, y, tam, self.projects.getCurrImgID())
+
+        limite_x = max(0, x-tam)
+        limite_y = max(0, y-tam)
+
+        for i in range(len(coord)):
+            if(len(coord[i]) > 0):
+                for c in coord[i]:
+                    m = self.projects.getMask(i)
+                    a = self.projects.getAnnotation(i)
+                    m.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
+                    a.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
+                self.projects.setMask(i, m)
+                self.projects.setAnnotation(i, a)
+        #Tempo total (s): 1330.4196474552155  --> Em (m): 22.17366079092026
+        #2D FUNCIONANDO
+        '''
         imgTeste = self.projects.getImage(self.projects.getCurrImgID())
         coord = w.start(imgTeste, size[0], size[1], x, y, tam)
 
@@ -1127,10 +1151,12 @@ class win_main(tkinter.Frame):
         for c in coord:
             mask.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
             annotation.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
+        
 
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
         self.projects.setAnnotation(self.projects.getCurrImgID(), annotation)
+        '''
         self.paint()
 
     def motion(self, event):
