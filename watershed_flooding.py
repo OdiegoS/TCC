@@ -14,31 +14,36 @@ import cv2
 class Watershed(object):
 
    def __init__(self):
-      self.HFQ = []
+      self.kernel = np.ones((3,3), np.uint8)
+      
+   def dilate_images(self, image, size):
+      self.images_cv = []
+      for i in image:
+         temp_img =  np.array(i)
+         gradient = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, self.kernel)
+         self.images_cv.append( Image.fromarray(np.array(gradient)) )
 
-   def start_3D(self, image, width, height, x, y, tam, index):
+      self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
+      for x in range(size):
+         for y in range(size):
+            self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
+
+   def start_3D(self, width, height, x, y, tam, index):
       img = []
-      img_cv = []
-
+      
       left = max(0, x-tam)
       upper = max(0, y-tam)
       right = min(width, x+tam)
       bottom = min(height, y+tam)
 
-      for i in image:
-         img.append(i.crop( (left, upper, right, bottom) ).convert('L') )
+      for i in self.images_cv:
+         img_crop = i.crop( (left, upper, right, bottom) ).convert('L')
+         img.append(np.array(img_crop) )
 
       marker = [min(y, tam), min(x, tam), index]
-      size = img[0].size
+      size = img_crop.size
 
-      kernel = np.ones((3,3), np.uint8)
-
-      for i in img:
-         temp =  np.array(i)
-         gradient = cv2.morphologyEx(temp, cv2.MORPH_GRADIENT, kernel)
-         img_cv.append( np.array(gradient) )
-
-      return  self.watershed_3D(img_cv, len(img_cv), size[0], size[1], marker)
+      return  self.watershed_3D(img, len(img), size[0], size[1], marker)
       
    def start(self, image, width, height, x, y, tam):
       img = image.crop( (max(0, x-tam), max(0, y-tam), min(width, x+tam), min(height, y+tam)) )
@@ -87,6 +92,7 @@ class Watershed(object):
       return lista
 
    def watershed_3D (self, image, qtd, width, height, marker):
+      self.HFQ = []
       self.L = np.zeros((qtd, height, width), np.int32)
       lista = [[] for _ in range(qtd)]
 
@@ -106,49 +112,64 @@ class Watershed(object):
          self.L [marker[2]] [k] [width-1] = 2
          self.HFQ.append( [ (k, width-1), 0, marker[2]] )
       
+      flag = False
       while len(self.HFQ) > 0:
+         flag = False
          p = self.outHFQ()
-         vizinhos = self.neighbors_3D(width, height, p[0])
-         for pixels in vizinhos:
-            if(self.L [p[2]] [pixels[0]] [pixels[1]] == 0):
+         for pixels in self.vizinhos[p[0][0]][p[0][1]]:
+            if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
                self.L [p[2]] [pixels[0]] [pixels[1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ_3D( (pixels[0], pixels[1]), image[p[2]][pixels[0]][pixels[1]], p[2])
+               flag = True
                if(self.L [p[2]] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]].append([pixels[1], pixels[0]])
          if(p[2] > 0):
-            if(self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0):
+            if( (self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
                self.L [p[2]-1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ_3D( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] - 1)
+               flag = True
                if(self.L [p[2]-1] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]-1].append([p[0][1], p[0][0]])
          if( p[2] < (qtd-1) ):
-            if(self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0):
+            if( (self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
                self.L [p[2]+1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ_3D( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] + 1)
+               flag = True
                if(self.L [p[2]+1] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]+1].append([p[0][1], p[0][0]])
-
+         if(flag):
+            self.sortHFQ()
       return lista
-      
+
    def neighbors(self, width, height, pixel):
       return np.mgrid[
             max(0, pixel[0] - 1):min(height, pixel[0] + 2),
             max(0, pixel[1] - 1):min(width, pixel[1] + 2)
          ].reshape(2, -1).T
 
-   def neighbors_3D(self, width, height, pixel):
-      return np.mgrid[
+   def neighbors_3D(self, width, height, pixel, profundidade, qtde):
+      temp = np.mgrid[
             max(0, pixel[0] - 1):min(height, pixel[0] + 2),
             max(0, pixel[1] - 1):min(width, pixel[1] + 2)
          ].reshape(2, -1).T
+      coord = np.full((temp.shape[0],3), profundidade)
+      coord[:,:-1] = temp
+      temp2 = []
+      if(profundidade > 0):
+         temp2.append([pixel[0], pixel[1], profundidade - 1])
+      if(profundidade < (qtde - 1) ):
+         temp2.append([pixel[0], pixel[1], profundidade + 1])
+      return np.append(coord, temp2, 0)
 
    def inHFQ(self, pixels, prio):
       self.HFQ.append([pixels, prio])
       self.HFQ.sort(key=lambda k: (k[1], -k[1]))
+      
+   def sortHFQ(self):
+      self.HFQ.sort(key=lambda k: (k[1], -k[1]))
 
    def inHFQ_3D(self, pixels, prio, index):
       self.HFQ.append([pixels, prio, index])
-      self.HFQ.sort(key=lambda k: (k[1], -k[1]))
 
    def outHFQ(self):
       element = self.HFQ[0]

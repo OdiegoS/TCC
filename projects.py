@@ -4,6 +4,7 @@ import os
 from PIL import Image
 from PIL import ImageTk
 import json
+from watershed_flooding import Watershed
 
 class Projects(object):
 
@@ -30,6 +31,8 @@ class Projects(object):
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
         self.currScale = self.imgScale.index(1)
 
+        self.watershed = Watershed()
+
         # self.imgScale = 1.0
         # self.maxScale = 5.0
         # self.minScale = 0.25
@@ -44,6 +47,10 @@ class Projects(object):
             os.makedirs("Projects")
 
         self.openSettings()
+
+    def applyWatershed(self, coord):
+        size = self.getDimensionCurrImg()
+        return self.watershed.start_3D(size[0], size[1], coord[0], coord[1], self.TAM, self.getCurrImgID())
 
     def getAppPath(self):
         return self.appPath
@@ -328,6 +335,8 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
+        self.watershed.dilate_images(self.images, self.TAM * 2)
+
         self.resetImgScale()
 
         #self.saveProject()
@@ -372,6 +381,8 @@ class Projects(object):
         self.users[ self.currUserID ][1] = path
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
+
+        self.watershed.dilate_images(self.images, self.TAM * 2)
 
         self.resetImgScale()
 

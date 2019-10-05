@@ -1108,24 +1108,12 @@ class win_main(tkinter.Frame):
         
         print ("%d, %d" %(x, y) )
 
-        # img = self.projects.getImage(self.projects.getCurrImgID())
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
-        #coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
-        #coord = (x,y)
-
-        size = self.projects.getDimensionCurrImg()
-        w = Watershed()
         tam = self.projects.TAM
 
-        imgTeste = []
-
-        qtde = self.projects.sizeImages()
-        for i in range(qtde):
-            imgTeste.append(self.projects.getImage(i))
-
-        coord = w.start_3D(imgTeste, size[0], size[1], x, y, tam, self.projects.getCurrImgID())
+        coord = self.projects.applyWatershed([x,y])
 
         limite_x = max(0, x-tam)
         limite_y = max(0, y-tam)
