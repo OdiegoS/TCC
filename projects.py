@@ -50,7 +50,7 @@ class Projects(object):
 
     def applyWatershed(self, coord):
         size = self.getDimensionCurrImg()
-        return self.watershed.start_3D(size[0], size[1], coord[0], coord[1], self.TAM, self.getCurrImgID())
+        return self.watershed.start(size[0], size[1], coord[0], coord[1], self.TAM, self.getCurrImgID())
 
     def getAppPath(self):
         return self.appPath
