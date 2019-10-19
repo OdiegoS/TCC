@@ -811,8 +811,10 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
-        tam = self.projects.TAM
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
+        tam = self.projects.TAM * self.projects.getImgScale()
+        rec_x = self.status.x * self.projects.getImgScale()
+        rec_y = self.status.y * self.projects.getImgScale()
+        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam,  rec_y-tam, rec_x+tam,  rec_y+tam, outline = "black")
 
     def paint(self):
 
@@ -1127,6 +1129,7 @@ class win_main(tkinter.Frame):
                     a.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
                 self.projects.setMask(i, m)
                 self.projects.setAnnotation(i, a)
+                
         '''
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
@@ -1167,8 +1170,8 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
-        tam = self.projects.TAM
-        self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
+        tam = self.projects.TAM * self.projects.getImgScale()
+        self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam, self.canvas.canvasy(event.y)-tam, self.canvas.canvasx(event.x)+tam, self.canvas.canvasy(event.y)+tam)
         
         self.updateStatus()
         #self.status.pack()
