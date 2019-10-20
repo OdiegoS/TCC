@@ -605,6 +605,8 @@ class win_main(tkinter.Frame):
         self.parent.bind("<MouseWheel>", self.moveImg) #Windows
         self.parent.bind("<Button-4>", self.moveImg) #Linux
         self.parent.bind("<Button-5>", self.moveImg) #Linux
+
+        self.parent.bind("<F2>", self.showHideMask)
         #print(self.canvas.bbox("imgTag"))
         ##########
 
@@ -1209,6 +1211,10 @@ class win_main(tkinter.Frame):
             #self.dragX = 0;
             #self.dragY = 0;
             self.redraw()
+
+    def showHideMask(self, event):
+        self.projects.changeMaskClean()
+        self.paint()
 
 #########################################################################
 #########################################################################

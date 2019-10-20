@@ -16,6 +16,7 @@ class Projects(object):
         self.currUserID = None
         self.currImgID = 0
         self.masks = []
+        self.masks_clean = []
         self.annotation = []
         self.images = []
         self.imagePaths = None
@@ -27,6 +28,7 @@ class Projects(object):
         self.lastBatchPath = None
         self.selectedLb = -1
         self.TAM = 50
+        self.CLEAN = False
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
         self.currScale = self.imgScale.index(1)
@@ -47,6 +49,9 @@ class Projects(object):
             os.makedirs("Projects")
 
         self.openSettings()
+
+    def changeMaskClean(self):
+        self.CLEAN = not self.CLEAN
 
     def applyWatershed(self, coord):
         size = self.getDimensionCurrImg()
@@ -187,7 +192,10 @@ class Projects(object):
         return img
 
     def getCurrMask(self):
-        img = ImageTk.PhotoImage(self.masks[ self.currImgID ] )
+        if(self.CLEAN):
+            img = ImageTk.PhotoImage(self.masks_clean[ self.currImgID ] )
+        else:
+             img = ImageTk.PhotoImage(self.masks[ self.currImgID ] )
         return img
 
     def getImage(self, pos):
@@ -278,6 +286,7 @@ class Projects(object):
             if(self.imagePaths == '/'):
                 del self.images[:]
                 del self.masks[:]
+                del self.masks_clean[:]
                 del self.annotation[:]
                 
         else:
@@ -327,6 +336,7 @@ class Projects(object):
             self.images = [Image.open(path)]
 
         self.masks = [ (self.createMask(self.images[0].size) ) ]
+        self.masks_clean = [ (self.createMask(self.images[0].size) ) ]
         self.annotation = [(self.createAnnotation(self.images[0].size))]
             
         #self.currImg = -1
@@ -373,6 +383,7 @@ class Projects(object):
             self.images.append(Image.open(path + "/" + filename))
 
             self.masks.append(self.createMask(self.images[-1].size) )
+            self.masks_clean.append(self.createMask(self.images[-1].size) )
             self.annotation.append(self.createAnnotation(self.images[-1].size))
             self.imagePaths.append(path + "/" + filename)
 
@@ -444,7 +455,10 @@ class Projects(object):
         return newImg
 
     def getCurrMaskResize(self,size):
-        img = self.masks [ self.currImgID ]
+        if(self.CLEAN):
+            img = self.masks_clean [ self.currImgID ]
+        else:
+            img = self.masks [ self.currImgID ]
         newImg = ImageTk.PhotoImage(img.resize(size))
         return newImg
 
