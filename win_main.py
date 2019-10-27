@@ -8,7 +8,6 @@ from tkinter.simpledialog import SimpleDialog
 from projects import Projects
 from watershed_flooding import Watershed
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class win_main(tkinter.Frame):

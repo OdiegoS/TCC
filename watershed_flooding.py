@@ -4,9 +4,6 @@ from PIL import ImageFilter
 from PIL import ImageChops
 from imageio import imwrite
 import sys
-import matplotlib.pyplot as plt
-from skimage import filters
-from scipy import ndimage
 import time
 import cv2
 import operator
