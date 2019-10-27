@@ -493,7 +493,9 @@ class Projects(object):
         del state['images']
         del state['imagePaths']
         del state['masks']
+        del state['masks_clean']
         del state['annotation']
+        del state['watershed']
         return state
 
     def __setstate__(self, state):
