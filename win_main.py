@@ -555,7 +555,8 @@ class win_main(tkinter.Frame):
 
             color = load[1]
 
-        self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0] = tkinter.Button(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0]['command'] = lambda : self.selectLb(None, i)
         self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
         self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], padx=3, command=lambda:self.commentLb(i))
@@ -1083,11 +1084,14 @@ class win_main(tkinter.Frame):
     def lostFocus2(self, event):
         self.fUser.focus()
 
-    def selectLb(self, event):
-        if(event.keysym[0] == 'K'):
-            key = int(event.keysym.split('_')[1]) - 1
+    def selectLb(self, event, click = None):
+        if(click == None):
+            if(event.keysym[0] == 'K'):
+                key = int(event.keysym.split('_')[1]) - 1
+            else:
+                key = int(event.keysym) - 1
         else:
-            key = int(event.keysym) - 1
+            key = click
 
         if(key == -1):
             key = 9
