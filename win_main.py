@@ -598,7 +598,7 @@ class win_main(tkinter.Frame):
 
         #self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
         #self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
-        self.canvas.tag_bind("maskTag", "<Double-Button-1>", self.onClick)
+        self.canvas.tag_bind("maskTag", "<Button-1>", self.onClick)
         self.canvas.tag_bind("maskTag", "<Motion>", self.motion)
 
         self.parent.bind("<Next>", self.moveImg)
