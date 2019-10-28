@@ -27,7 +27,7 @@ class Projects(object):
         self.lastImagePath = None
         self.lastBatchPath = None
         self.selectedLb = -1
-        self.TAM = 50
+        self.ROI = [50, 50, 2]
         self.CLEAN = False
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
@@ -50,12 +50,15 @@ class Projects(object):
 
         self.openSettings()
 
+    def setRoI(self, x, y, z):
+        self.ROI = [x, y, z]
+
     def changeMaskClean(self):
         self.CLEAN = not self.CLEAN
 
     def applyWatershed(self, coord):
         size = self.getDimensionCurrImg()
-        return self.watershed.start(size[0], size[1], coord[0], coord[1], self.TAM, self.getCurrImgID())
+        return self.watershed.start(size[0], size[1], coord[0], coord[1], self.ROI, self.getCurrImgID())
 
     def getAppPath(self):
         return self.appPath
@@ -345,7 +348,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.TAM * 2)
+        self.watershed.dilate_images(self.images, self.ROI)
 
         self.resetImgScale()
 
@@ -393,7 +396,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.TAM * 2)
+        self.watershed.dilate_images(self.images, self.ROI)
 
         self.resetImgScale()
 

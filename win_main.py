@@ -372,6 +372,8 @@ class win_main(tkinter.Frame):
         #self.mnuArquivo.add_command(label="Save Comments As", command=self.saveCommentsAs)
         #self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
         self.mnuArquivo.add_separator()
+        self.mnuArquivo.add_command(label="Customize RoI", command=self.changeRoi)
+        self.mnuArquivo.add_separator()
         self.mnuArquivo.add_command(label="Quit", command=self.sair)
         self.menuBar.add_cascade(label="Image", menu=self.mnuArquivo)
  
@@ -742,8 +744,8 @@ class win_main(tkinter.Frame):
 
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
-        tam = self.projects.TAM
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
+        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = "black")
 
     def redraw(self):
         self.canvas.delete("all")
@@ -812,10 +814,10 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
-        tam = self.projects.TAM * self.projects.getImgScale()
+        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
         rec_x = self.status.x * self.projects.getImgScale()
         rec_y = self.status.y * self.projects.getImgScale()
-        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam,  rec_y-tam, rec_x+tam,  rec_y+tam, outline = "black")
+        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = "black")
 
     def paint(self):
 
@@ -1007,7 +1009,53 @@ class win_main(tkinter.Frame):
      
     def sobre(self):
         pass
-         
+
+    def changeRoi(self):
+        createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
+        createWin.title("Insert new Values")
+        centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
+        createWin.geometry('+%d+%d' %(centralized[0], centralized[1]) )
+        createWin.resizable(width=False, height=False)
+        createWin.focus_force()
+        createWin.grab_set()
+
+        newWin_lbX = tkinter.Label(createWin, text="X: ")
+        newWin_lbX.grid(row = 0, column = 0)
+        newWin_lbY = tkinter.Label(createWin, text="Y: ")
+        newWin_lbY.grid(row = 1, column = 0)
+        newWin_lbZ = tkinter.Label(createWin, text="Z: ")
+        newWin_lbZ.grid(row = 2, column = 0)
+
+        newWin_entX = tkinter.Entry(createWin)
+        newWin_entX.insert(0, self.projects.ROI[0])
+        newWin_entX.grid(row = 0, column = 1)
+        newWin_entY = tkinter.Entry(createWin)
+        newWin_entY.insert(0, self.projects.ROI[1])
+        newWin_entY.grid(row = 1, column = 1)
+        newWin_entZ = tkinter.Entry(createWin)
+        newWin_entZ.insert(0, self.projects.ROI[2])
+        newWin_entZ.grid(row = 2, column = 1)
+
+        newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
+        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, createWin]: self.confirmRoi(btn)
+        newWin_btnOK.grid(row = 3, column = 0)
+        
+        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
+        newWin_btnCancel.grid(row = 3, column = 1)
+
+    def confirmRoi(self, info):
+        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) ):
+            tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a number in the field before proceeding.")
+            return
+
+        if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
+            tkinter.messagebox.showwarning("Warning", "Please, enter a valid number.")
+            return
+
+        self.projects.setRoI(int(info[0].get()), int(info[1].get()), int(info[2].get()))
+
+        info[3].destroy()
+
     def sair(self):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
 
@@ -1114,12 +1162,12 @@ class win_main(tkinter.Frame):
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
-        tam = self.projects.TAM
+        tam = self.projects.ROI
 
         coord = self.projects.applyWatershed([x,y])
 
-        limite_x = max(0, x-tam)
-        limite_y = max(0, y-tam)
+        limite_x = max(0, x-tam[0])
+        limite_y = max(0, y-tam[1])
 
         for i in range(len(coord)):
             if(len(coord[i]) > 0):
@@ -1171,8 +1219,8 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
-        tam = self.projects.TAM * self.projects.getImgScale()
-        self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam, self.canvas.canvasy(event.y)-tam, self.canvas.canvasx(event.x)+tam, self.canvas.canvasy(event.y)+tam)
+        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
+        self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam[0], self.canvas.canvasy(event.y)-tam[1], self.canvas.canvasx(event.x)+tam[0], self.canvas.canvasy(event.y)+tam[1])
         
         self.updateStatus()
         #self.status.pack()

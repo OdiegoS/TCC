@@ -21,24 +21,24 @@ class Watershed(object):
          gradient = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, self.kernel)
          self.images_cv.append( Image.fromarray(np.array(gradient)) )
 
-      self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
-      for x in range(size):
-         for y in range(size):
-            self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
+      # self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
+      # for x in range(size):
+      #    for y in range(size):
+      #       self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
 
    def start(self, width, height, x, y, tam, index):
       img = []
       
-      left = max(0, x-tam)
-      upper = max(0, y-tam)
-      right = min(width, x+tam)
-      bottom = min(height, y+tam)
+      left = max(0, x-tam[0])
+      upper = max(0, y-tam[1])
+      right = min(width, x+tam[0])
+      bottom = min(height, y+tam[1])
 
-      for i in self.images_cv:
+      for i in self.images_cv[index:(index+tam[2])]:
          img_crop = i.crop( (left, upper, right, bottom) ).convert('L')
          img.append(np.array(img_crop) )
 
-      marker = [min(y, tam), min(x, tam), index]
+      marker = [min(y, tam[1]), min(x, tam[0]), index]
       size = img_crop.size
 
       return  self.watershed(img, len(img), size[0], size[1], marker)
@@ -69,7 +69,8 @@ class Watershed(object):
       while len(self.HFQ) > 0:
          flag = False
          p = self.outHFQ()
-         for pixels in self.vizinhos[p[0][0]][p[0][1]]:
+         #for pixels in self.vizinhos[p[0][0]][p[0][1]]:
+         for pixels in self.neighbors(width, height, ( p[0][0], p[0][1] ) ):
             if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
                self.L [p[2]] [pixels[0]] [pixels[1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (pixels[0], pixels[1]), image[p[2]][pixels[0]][pixels[1]], p[2])
