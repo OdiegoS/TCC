@@ -661,6 +661,21 @@ class win_main(tkinter.Frame):
         #self.canvas.deltaMov[2] =  0
         '''
 
+        tam = self.projects.ROI
+        coord_x = [max(0, int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) - tam[0]), min(self.projects.getDimensionCurrImg()[0], int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) + tam[0]) ]
+        coord_y = [max(0, int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) - tam[1]), min(self.projects.getDimensionCurrImg()[1], int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) + tam[1]) ]
+
+        for i in range(coord_x[0], coord_x[1]):
+            for j in range (coord_y[0], coord_y[1]):
+                m = self.projects.getMask(self.projects.getCurrImgID())
+                a = self.projects.getAnnotation(self.projects.getCurrImgID())
+                m.putpixel( (i, j), (0,0,0,0) )
+                a.putpixel( (i, j), 0 )
+        self.projects.setMask(self.projects.getCurrImgID(), m)
+        self.projects.setAnnotation(self.projects.getCurrImgID(), a)
+
+        self.paint()
+
         #print(self.dragY, self.dragX)
 
         #self.atualX = 0;
