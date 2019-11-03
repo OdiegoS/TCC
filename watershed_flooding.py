@@ -26,7 +26,7 @@ class Watershed(object):
       #    for y in range(size):
       #       self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
 
-   def start(self, width, height, x, y, tam, index):
+   def start(self, width, height, x, y, tam, index, dim):
       img = []
       
       left = max(0, x-tam[0])
@@ -34,11 +34,21 @@ class Watershed(object):
       right = min(width, x+tam[0])
       bottom = min(height, y+tam[1])
 
-      for i in self.images_cv[index:(index+tam[2])]:
+      if( (index - tam[2] >= 0) ):
+         z_start = index - tam[2]
+         idx = tam[2]
+      else:
+         z_start = 0
+         idx = index 
+      z_start = max(0, index - tam[2])
+      idx = min(index, tam[2])
+      z_end = min(dim, index + tam[2]) + 1
+
+      for i in self.images_cv[z_start:z_end]:
          img_crop = i.crop( (left, upper, right, bottom) ).convert('L')
          img.append(np.array(img_crop) )
 
-      marker = [min(y, tam[1]), min(x, tam[0]), index]
+      marker = [min(y, tam[1]), min(x, tam[0]), idx]
       size = img_crop.size
 
       return  self.watershed(img, len(img), size[0], size[1], marker)

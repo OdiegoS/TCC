@@ -361,6 +361,9 @@ class win_main(tkinter.Frame):
         self.mnuProject.add_command(label="Save Project",  command=self.projects.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
         self.mnuProject.add_command(label="Save Annotation", command=self.saveAnnotation)
+        self.mnuProject.add_command(label="Export Count", command=self.exportCount)
+        self.mnuProject.add_separator()
+        self.mnuProject.add_command(label="Quit", command=self.sair)
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
         self.mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
@@ -373,8 +376,6 @@ class win_main(tkinter.Frame):
         #self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
         self.mnuArquivo.add_separator()
         self.mnuArquivo.add_command(label="Customize RoI", command=self.changeRoi)
-        self.mnuArquivo.add_separator()
-        self.mnuArquivo.add_command(label="Quit", command=self.sair)
         self.menuBar.add_cascade(label="Image", menu=self.mnuArquivo)
  
         mnuTeste = tkinter.Menu(self.menuBar, tearoff=0)
@@ -592,6 +593,7 @@ class win_main(tkinter.Frame):
             self.projects.removeLabel()
 
     def addBind(self):
+        self.canvas.shiftPress = False
         ##########
         #Image Bind
         #self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
@@ -631,12 +633,15 @@ class win_main(tkinter.Frame):
         #self.canvas.tag_bind("imgTag", "<ButtonPress-3>", self.buttonPress)
         #self.canvas.tag_bind("imgTag", "<B3-Motion>", self.buttonMove)
         #self.canvas.tag_bind("imgTag", "<ButtonRelease-3>", self.buttonRelease)
-        self.canvas.tag_bind("maskTag", "<ButtonPress-3>", self.buttonPress)
-        self.canvas.tag_bind("maskTag", "<B3-Motion>", self.buttonMove)
+        self.canvas.tag_bind("maskTag", "<Shift-ButtonPress-3>", self.buttonPress)
+        self.canvas.tag_bind("maskTag", "<Shift-B3-Motion>", self.buttonMove)
+
         self.canvas.tag_bind("maskTag", "<ButtonRelease-3>", self.buttonRelease)
 
     def buttonPress(self, event):
         self.canvas.scan_mark(event.x, event.y)
+
+        self.canvas.shiftPress = True
 
         # self.canvasAtualX = event.x
         # self.canvasAtualY = event.y
@@ -660,19 +665,28 @@ class win_main(tkinter.Frame):
         self.canvas.deltaMov[1] = self.canvas.deltaMov[1] + self.sumDeltaMov[1]
         #self.canvas.deltaMov[2] =  0
         '''
-
-        tam = self.projects.ROI
+        if(self.canvas.shiftPress):
+            self.canvas.shiftPress = False
+            return
+        print("ainda passa aqui")
+        tam = self.projects.WRADIUS
         coord_x = [max(0, int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) - tam[0]), min(self.projects.getDimensionCurrImg()[0], int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) + tam[0]) ]
         coord_y = [max(0, int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) - tam[1]), min(self.projects.getDimensionCurrImg()[1], int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) + tam[1]) ]
+        coord_z = [max(0, self.projects.getCurrImgID() - tam[2]), min(self.projects.sizeImages(), self.projects.getCurrImgID() + tam[2] + 1) ]
 
-        for i in range(coord_x[0], coord_x[1]):
-            for j in range (coord_y[0], coord_y[1]):
-                m = self.projects.getMask(self.projects.getCurrImgID())
-                a = self.projects.getAnnotation(self.projects.getCurrImgID())
-                m.putpixel( (i, j), (0,0,0,0) )
-                a.putpixel( (i, j), 0 )
-        self.projects.setMask(self.projects.getCurrImgID(), m)
-        self.projects.setAnnotation(self.projects.getCurrImgID(), a)
+        colorHex = self.projects.getLabels(self.projects.getSelectedLb())[1]
+        colorRGB = tuple(int(colorHex.lstrip('#')[i:i+2], 16) for i in (0, 2 ,4))
+
+        for z in range(coord_z[0], coord_z[1]):
+            for i in range(coord_x[0], coord_x[1]):
+                for j in range (coord_y[0], coord_y[1]):
+                    m = self.projects.getMask(z)
+                    a = self.projects.getAnnotation(z)
+                    if(m.getpixel((i, j))[:-1] == colorRGB):
+                        m.putpixel( (i, j), (0,0,0,0) )
+                        a.putpixel( (i, j), 0 )
+            self.projects.setMask(z, m)
+            self.projects.setAnnotation(z, a)
 
         self.paint()
 
@@ -760,7 +774,7 @@ class win_main(tkinter.Frame):
 
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
-        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = "black")
 
     def redraw(self):
@@ -830,7 +844,7 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
-        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         rec_x = self.status.x * self.projects.getImgScale()
         rec_y = self.status.y * self.projects.getImgScale()
         self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = "black")
@@ -985,6 +999,11 @@ class win_main(tkinter.Frame):
     def saveAnnotation(self):
         self.projects.saveAnnotation()
 
+    def exportCount(self):
+        res = filedialog.asksaveasfilename(title="Export as ", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
+        if(isinstance(res, str) and res != ""):
+            self.projects.exportCount(res)
+
     def loadComments(self):
 
         """
@@ -1043,13 +1062,13 @@ class win_main(tkinter.Frame):
         newWin_lbZ.grid(row = 2, column = 0)
 
         newWin_entX = tkinter.Entry(createWin)
-        newWin_entX.insert(0, self.projects.ROI[0])
+        newWin_entX.insert(0, self.projects.WRADIUS[0])
         newWin_entX.grid(row = 0, column = 1)
         newWin_entY = tkinter.Entry(createWin)
-        newWin_entY.insert(0, self.projects.ROI[1])
+        newWin_entY.insert(0, self.projects.WRADIUS[1])
         newWin_entY.grid(row = 1, column = 1)
         newWin_entZ = tkinter.Entry(createWin)
-        newWin_entZ.insert(0, self.projects.ROI[2])
+        newWin_entZ.insert(0, self.projects.WRADIUS[2])
         newWin_entZ.grid(row = 2, column = 1)
 
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
@@ -1181,22 +1200,26 @@ class win_main(tkinter.Frame):
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
-        tam = self.projects.ROI
+        tam = self.projects.WRADIUS
 
         coord = self.projects.applyWatershed([x,y])
 
         limite_x = max(0, x-tam[0])
         limite_y = max(0, y-tam[1])
 
-        for i in range(len(coord)):
-            if(len(coord[i]) > 0):
-                for c in coord[i]:
+        z_start = max(0, self.projects.getCurrImgID() - tam[2])
+        z_end = min(self.projects.sizeImages()-1, self.projects.getCurrImgID() + tam[2]) + 1
+
+        for i in range(z_start,z_end):
+            if(len(coord[0]) > 0):
+                for c in coord[0]:
                     m = self.projects.getMask(i)
                     a = self.projects.getAnnotation(i)
                     m.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
                     a.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
                 self.projects.setMask(i, m)
                 self.projects.setAnnotation(i, a)
+            del(coord[0])
                 
         '''
         # self.projects.setImage(self.projects.getCurrImgID(),img)
@@ -1238,7 +1261,7 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
-        tam = [ self.projects.ROI[0] * self.projects.getImgScale(), self.projects.ROI[1] * self.projects.getImgScale() ]
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam[0], self.canvas.canvasy(event.y)-tam[1], self.canvas.canvasx(event.x)+tam[0], self.canvas.canvasy(event.y)+tam[1])
         
         self.updateStatus()
