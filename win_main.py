@@ -8,7 +8,6 @@ from tkinter.simpledialog import SimpleDialog
 from projects import Projects
 from watershed_flooding import Watershed
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class win_main(tkinter.Frame):
@@ -362,6 +361,9 @@ class win_main(tkinter.Frame):
         self.mnuProject.add_command(label="Save Project",  command=self.projects.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
         self.mnuProject.add_command(label="Save Annotation", command=self.saveAnnotation)
+        self.mnuProject.add_command(label="Export Count", command=self.exportCount)
+        self.mnuProject.add_separator()
+        self.mnuProject.add_command(label="Quit", command=self.sair)
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
         self.mnuArquivo = tkinter.Menu(self.menuBar, tearoff=0)
@@ -373,7 +375,7 @@ class win_main(tkinter.Frame):
         #self.mnuArquivo.add_command(label="Save Comments As", command=self.saveCommentsAs)
         #self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
         self.mnuArquivo.add_separator()
-        self.mnuArquivo.add_command(label="Quit", command=self.sair)
+        self.mnuArquivo.add_command(label="Customize RoI", command=self.changeRoi)
         self.menuBar.add_cascade(label="Image", menu=self.mnuArquivo)
  
         mnuTeste = tkinter.Menu(self.menuBar, tearoff=0)
@@ -554,7 +556,8 @@ class win_main(tkinter.Frame):
 
             color = load[1]
 
-        self.label[i][0] = tkinter.Label(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0] = tkinter.Button(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0]['command'] = lambda : self.selectLb(None, i)
         self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
         self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], padx=3, command=lambda:self.commentLb(i))
@@ -590,13 +593,14 @@ class win_main(tkinter.Frame):
             self.projects.removeLabel()
 
     def addBind(self):
+        self.canvas.shiftPress = False
         ##########
         #Image Bind
         #self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
 
         #self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
         #self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
-        self.canvas.tag_bind("maskTag", "<Double-Button-1>", self.onClick)
+        self.canvas.tag_bind("maskTag", "<Button-1>", self.onClick)
         self.canvas.tag_bind("maskTag", "<Motion>", self.motion)
 
         self.parent.bind("<Next>", self.moveImg)
@@ -605,6 +609,8 @@ class win_main(tkinter.Frame):
         self.parent.bind("<MouseWheel>", self.moveImg) #Windows
         self.parent.bind("<Button-4>", self.moveImg) #Linux
         self.parent.bind("<Button-5>", self.moveImg) #Linux
+
+        self.parent.bind("<F2>", self.showHideMask)
         #print(self.canvas.bbox("imgTag"))
         ##########
 
@@ -627,12 +633,15 @@ class win_main(tkinter.Frame):
         #self.canvas.tag_bind("imgTag", "<ButtonPress-3>", self.buttonPress)
         #self.canvas.tag_bind("imgTag", "<B3-Motion>", self.buttonMove)
         #self.canvas.tag_bind("imgTag", "<ButtonRelease-3>", self.buttonRelease)
-        self.canvas.tag_bind("maskTag", "<ButtonPress-3>", self.buttonPress)
-        self.canvas.tag_bind("maskTag", "<B3-Motion>", self.buttonMove)
+        self.canvas.tag_bind("maskTag", "<Shift-ButtonPress-3>", self.buttonPress)
+        self.canvas.tag_bind("maskTag", "<Shift-B3-Motion>", self.buttonMove)
+
         self.canvas.tag_bind("maskTag", "<ButtonRelease-3>", self.buttonRelease)
 
     def buttonPress(self, event):
         self.canvas.scan_mark(event.x, event.y)
+
+        self.canvas.shiftPress = True
 
         # self.canvasAtualX = event.x
         # self.canvasAtualY = event.y
@@ -656,6 +665,30 @@ class win_main(tkinter.Frame):
         self.canvas.deltaMov[1] = self.canvas.deltaMov[1] + self.sumDeltaMov[1]
         #self.canvas.deltaMov[2] =  0
         '''
+        if(self.canvas.shiftPress):
+            self.canvas.shiftPress = False
+            return
+        print("ainda passa aqui")
+        tam = self.projects.WRADIUS
+        coord_x = [max(0, int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) - tam[0]), min(self.projects.getDimensionCurrImg()[0], int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) + tam[0]) ]
+        coord_y = [max(0, int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) - tam[1]), min(self.projects.getDimensionCurrImg()[1], int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) + tam[1]) ]
+        coord_z = [max(0, self.projects.getCurrImgID() - tam[2]), min(self.projects.sizeImages(), self.projects.getCurrImgID() + tam[2] + 1) ]
+
+        colorHex = self.projects.getLabels(self.projects.getSelectedLb())[1]
+        colorRGB = tuple(int(colorHex.lstrip('#')[i:i+2], 16) for i in (0, 2 ,4))
+
+        for z in range(coord_z[0], coord_z[1]):
+            for i in range(coord_x[0], coord_x[1]):
+                for j in range (coord_y[0], coord_y[1]):
+                    m = self.projects.getMask(z)
+                    a = self.projects.getAnnotation(z)
+                    if(m.getpixel((i, j))[:-1] == colorRGB):
+                        m.putpixel( (i, j), (0,0,0,0) )
+                        a.putpixel( (i, j), 0 )
+            self.projects.setMask(z, m)
+            self.projects.setAnnotation(z, a)
+
+        self.paint()
 
         #print(self.dragY, self.dragX)
 
@@ -741,8 +774,8 @@ class win_main(tkinter.Frame):
 
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
-        tam = self.projects.TAM
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = "black")
 
     def redraw(self):
         self.canvas.delete("all")
@@ -811,8 +844,10 @@ class win_main(tkinter.Frame):
         self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
-        tam = self.projects.TAM
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam, self.status.y-tam, self.status.x+tam, self.status.y+tam, outline = "black")
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
+        rec_x = self.status.x * self.projects.getImgScale()
+        rec_y = self.status.y * self.projects.getImgScale()
+        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = "black")
 
     def paint(self):
 
@@ -964,6 +999,11 @@ class win_main(tkinter.Frame):
     def saveAnnotation(self):
         self.projects.saveAnnotation()
 
+    def exportCount(self):
+        res = filedialog.asksaveasfilename(title="Export as ", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
+        if(isinstance(res, str) and res != ""):
+            self.projects.exportCount(res)
+
     def loadComments(self):
 
         """
@@ -1004,7 +1044,53 @@ class win_main(tkinter.Frame):
      
     def sobre(self):
         pass
-         
+
+    def changeRoi(self):
+        createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
+        createWin.title("Insert new Values")
+        centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
+        createWin.geometry('+%d+%d' %(centralized[0], centralized[1]) )
+        createWin.resizable(width=False, height=False)
+        createWin.focus_force()
+        createWin.grab_set()
+
+        newWin_lbX = tkinter.Label(createWin, text="X: ")
+        newWin_lbX.grid(row = 0, column = 0)
+        newWin_lbY = tkinter.Label(createWin, text="Y: ")
+        newWin_lbY.grid(row = 1, column = 0)
+        newWin_lbZ = tkinter.Label(createWin, text="Z: ")
+        newWin_lbZ.grid(row = 2, column = 0)
+
+        newWin_entX = tkinter.Entry(createWin)
+        newWin_entX.insert(0, self.projects.WRADIUS[0])
+        newWin_entX.grid(row = 0, column = 1)
+        newWin_entY = tkinter.Entry(createWin)
+        newWin_entY.insert(0, self.projects.WRADIUS[1])
+        newWin_entY.grid(row = 1, column = 1)
+        newWin_entZ = tkinter.Entry(createWin)
+        newWin_entZ.insert(0, self.projects.WRADIUS[2])
+        newWin_entZ.grid(row = 2, column = 1)
+
+        newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
+        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, createWin]: self.confirmRoi(btn)
+        newWin_btnOK.grid(row = 3, column = 0)
+        
+        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
+        newWin_btnCancel.grid(row = 3, column = 1)
+
+    def confirmRoi(self, info):
+        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) ):
+            tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a number in the field before proceeding.")
+            return
+
+        if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
+            tkinter.messagebox.showwarning("Warning", "Please, enter a valid number.")
+            return
+
+        self.projects.setRoI(int(info[0].get()), int(info[1].get()), int(info[2].get()))
+
+        info[3].destroy()
+
     def sair(self):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
 
@@ -1032,11 +1118,14 @@ class win_main(tkinter.Frame):
     def lostFocus2(self, event):
         self.fUser.focus()
 
-    def selectLb(self, event):
-        if(event.keysym[0] == 'K'):
-            key = int(event.keysym.split('_')[1]) - 1
+    def selectLb(self, event, click = None):
+        if(click == None):
+            if(event.keysym[0] == 'K'):
+                key = int(event.keysym.split('_')[1]) - 1
+            else:
+                key = int(event.keysym) - 1
         else:
-            key = int(event.keysym) - 1
+            key = click
 
         if(key == -1):
             key = 9
@@ -1108,29 +1197,35 @@ class win_main(tkinter.Frame):
         
         print ("%d, %d" %(x, y) )
 
-        # img = self.projects.getImage(self.projects.getCurrImgID())
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
-        #coord = ( int(x // self.projects.getImgScale()), int(y // self.projects.getImgScale()) )
-        #coord = (x,y)
+        tam = self.projects.WRADIUS
 
-        size = self.projects.getDimensionCurrImg()
-        w = Watershed()
-        tam = self.projects.TAM
-        imgTeste = self.projects.getImage(self.projects.getCurrImgID())
-        coord = w.start(imgTeste, size[0], size[1], x, y, tam)
+        coord = self.projects.applyWatershed([x,y])
 
-        limite_x = max(0, x-tam)
-        limite_y = max(0, y-tam)
+        limite_x = max(0, x-tam[0])
+        limite_y = max(0, y-tam[1])
 
-        for c in coord:
-            mask.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
-            annotation.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
+        z_start = max(0, self.projects.getCurrImgID() - tam[2])
+        z_end = min(self.projects.sizeImages()-1, self.projects.getCurrImgID() + tam[2]) + 1
 
+        for i in range(z_start,z_end):
+            if(len(coord[0]) > 0):
+                for c in coord[0]:
+                    m = self.projects.getMask(i)
+                    a = self.projects.getAnnotation(i)
+                    m.putpixel( (limite_x + c[0], limite_y + c[1]), colorRGB )
+                    a.putpixel( (limite_x + c[0], limite_y + c[1]), self.projects.getSelectedLb() + 1)
+                self.projects.setMask(i, m)
+                self.projects.setAnnotation(i, a)
+            del(coord[0])
+                
+        '''
         # self.projects.setImage(self.projects.getCurrImgID(),img)
         self.projects.setMask(self.projects.getCurrImgID(), mask)
         self.projects.setAnnotation(self.projects.getCurrImgID(), annotation)
+        '''
         self.paint()
 
     def motion(self, event):
@@ -1166,8 +1261,8 @@ class win_main(tkinter.Frame):
         #y = self.canvas.canvasy(event.y);
 
         #print(self.canvas.bbox("imgTag"));
-        tam = self.projects.TAM
-        self.canvas.coords(self.canvas.rect, x-tam, y-tam, x+tam, y+tam)
+        tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
+        self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam[0], self.canvas.canvasy(event.y)-tam[1], self.canvas.canvasx(event.x)+tam[0], self.canvas.canvasy(event.y)+tam[1])
         
         self.updateStatus()
         #self.status.pack()
@@ -1205,6 +1300,10 @@ class win_main(tkinter.Frame):
             #self.dragX = 0;
             #self.dragY = 0;
             self.redraw()
+
+    def showHideMask(self, event):
+        self.projects.changeMaskClean()
+        self.paint()
 
 #########################################################################
 #########################################################################
