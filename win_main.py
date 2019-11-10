@@ -1107,11 +1107,11 @@ class win_main(tkinter.Frame):
 
     def confirmRoi(self, info):
         if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) ):
-            tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a number in the field before proceeding.")
+            tkinter.messagebox.showwarning(parent=info[3],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
             return
 
         if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
-            tkinter.messagebox.showwarning("Warning", "Please, enter a valid number.")
+            tkinter.messagebox.showwarning(arent=info[3],title="Warning", message="Please, enter a valid number.")
             return
 
         self.projects.setRoI(int(info[0].get()), int(info[1].get()), int(info[2].get()))
