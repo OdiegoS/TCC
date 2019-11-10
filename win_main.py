@@ -64,11 +64,13 @@ class win_main(tkinter.Frame):
         createWin.grid_columnconfigure(0, minsize=50)
         createWin.grid_columnconfigure(3, minsize=50)
 
-        btnNewProject = tkinter.Button(createWin, text="Create a new project", bg="green")
+        #btnNewProject = tkinter.Button(createWin, text="Create a new project", bg="green")
+        btnNewProject = tkinter.Button(createWin, text="Create a new project")
         btnNewProject.grid(row=2, column=1)
         createWin.grid_rowconfigure(btnNewProject, minsize=50)
 
-        btnOpenProject = tkinter.Button(createWin, text="Open a project", bg="red")
+        #btnOpenProject = tkinter.Button(createWin, text="Open a project", bg="red")
+        btnOpenProject = tkinter.Button(createWin, text="Open a project")
         btnOpenProject.grid(row=4, column=1)
         createWin.grid_rowconfigure(btnOpenProject, minsize=50)
 
@@ -155,7 +157,8 @@ class win_main(tkinter.Frame):
         chWin_radio[ self.projects.currUserID ].select()
         #self.user = var.get()
 
-        chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10, bg = "green")
+        #chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10, bg = "green")
+        chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10)
         chWin_btnConfirm['command'] = lambda btn = topChooseWindow: self.confirmUser(btn)
         chWin_btnConfirm.grid(row = len(chWin_radio)+2, column = 0, padx = 52, pady = 10)
 
@@ -220,7 +223,8 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
+            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
+            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
@@ -259,7 +263,8 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
+            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
+            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
@@ -308,7 +313,8 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red", command = self.rmUser) )
+            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red", command = self.rmUser) )
+            self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, command = self.rmUser) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
@@ -402,7 +408,7 @@ class win_main(tkinter.Frame):
         self.imgScrollVertical = tkinter.Scrollbar(self.fMain, orient="vertical")
         self.imgScrollHorizontal = tkinter.Scrollbar(self.fMain, orient="horizontal")
         self.canvas = tkinter.Canvas(self.fMain, highlightthickness=10, scrollregion=(0,0,100,100), xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
-        self.canvas.config(bg="yellow")
+        #self.canvas.config(bg="yellow")
 
         self.imgScrollVertical.config(command=self.canvas.yview)
         self.imgScrollHorizontal.config(command=self.canvas.xview)
@@ -423,14 +429,16 @@ class win_main(tkinter.Frame):
         #self.fStatus.columnconfigure(0, weight=1)
         
         #self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
-        self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
+        #self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
+        self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w')
         self.status.pack(side='bottom', fill='x')
 
         self.status.x = -1
         self.status.y = -1
         
     def frameLabel(self):
-        self.frameRight = tkinter.Frame(self.parent, bg= "orange")
+        #self.frameRight = tkinter.Frame(self.parent, bg= "orange")
+        self.frameRight = tkinter.Frame(self.parent)
         self.frameRight.grid(row = 0, column = 1, stick='nswe', ipadx=5)
 
 
@@ -439,7 +447,8 @@ class win_main(tkinter.Frame):
         self.frameRight.columnconfigure(0, weight=1)
         self.frameRight.rowconfigure(1, weight=1, minsize=130)
                 
-        self.frameLb = tkinter.Frame(self.frameRight, bg="pink")
+        #self.frameLb = tkinter.Frame(self.frameRight, bg="pink")
+        self.frameLb = tkinter.Frame(self.frameRight)
         #self.fLabel = tkinter.Frame(self.lbCanvas, bg="green")
         self.frameLb.grid(row = 0, stick='nswe', ipadx=5)
 
@@ -448,11 +457,13 @@ class win_main(tkinter.Frame):
         
         self.lbScrollVertical = tkinter.Scrollbar(self.frameLb, orient="vertical")
         self.lbScrollHorizontal = tkinter.Scrollbar(self.frameLb, orient="horizontal")
-        self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
+        #self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
+        self.lbCanvas = tkinter.Canvas(self.frameLb, xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
         self.lbScrollVertical.config(command=self.lbCanvas.yview)
         self.lbScrollHorizontal.config(command=self.lbCanvas.xview)
 
-        self.fLabel = tkinter.Frame(self.lbCanvas, bg="blue")
+        #self.fLabel = tkinter.Frame(self.lbCanvas, bg="blue")
+        self.fLabel = tkinter.Frame(self.lbCanvas)
         self.fLabel.pack(fill="both", expand=False)
 
         #self.fLabel.rowconfigure(0, weight=1)
@@ -472,11 +483,11 @@ class win_main(tkinter.Frame):
         self.label = []
         self.labelTitle = []
 
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='raised', padx=3, border=0))
         self.labelTitle[0].grid(row=0, column = 0, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comments", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comments", relief='raised', padx=3, border=0))
         self.labelTitle[1].grid(row=0, column = 1, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Mark Color", relief='raised', padx=3))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Mark Color", relief='raised', padx=3,border=0))
         self.labelTitle[2].grid(row=0, column = 2, ipady=10)
 
         self.btn_addLb = tkinter.Button(self.fLabel, text="Insert Label", padx=3, command= self.addLb)
@@ -486,7 +497,8 @@ class win_main(tkinter.Frame):
         self.addLb()
         self.addLb()
         
-        self.frameUser = tkinter.Frame(self.frameRight, bg="purple")
+        #self.frameUser = tkinter.Frame(self.frameRight, bg="purple")
+        self.frameUser = tkinter.Frame(self.frameRight)
         self.frameUser.grid(row = 1, stick='nswe', ipadx=5)
 
         #self.frameUser.rowconfigure(0, weight=1)
@@ -494,11 +506,13 @@ class win_main(tkinter.Frame):
 
         self.userScrollVertical = tkinter.Scrollbar(self.frameUser, orient="vertical")
         self.userScrollHorizontal = tkinter.Scrollbar(self.frameUser, orient="horizontal")
-        self.userCanvas = tkinter.Canvas(self.frameUser, bg ="pink", xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
+        #self.userCanvas = tkinter.Canvas(self.frameUser, bg ="pink", xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
+        self.userCanvas = tkinter.Canvas(self.frameUser, xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
         self.userScrollVertical.config(command=self.userCanvas.yview)
         self.userScrollHorizontal.config(command=self.userCanvas.xview)
 
-        self.fUser = tkinter.Frame(self.userCanvas, bg="gray")
+        #self.fUser = tkinter.Frame(self.userCanvas, bg="gray")
+        self.fUser = tkinter.Frame(self.userCanvas)
         self.fUser.pack(fill="both", expand=False)
 
         #self.fUser.rowconfigure(0, weight=1)
@@ -517,7 +531,8 @@ class win_main(tkinter.Frame):
         self.userTitle = tkinter.Label(self.fUser, text="Users:", padx=3)
         self.userTitle.grid(row=0, ipady = 10)
 
-        self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, bg = "green", command = self.addUser)
+        #self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, bg = "green", command = self.addUser)
+        self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, command = self.addUser)
 
     def commentLb(self, i):
 
@@ -567,7 +582,7 @@ class win_main(tkinter.Frame):
         #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
         self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
-        self.label[i][2] = tkinter.Button(self.fLabel, text="Cor", padx=3, bg=color)
+        self.label[i][2] = tkinter.Button(self.fLabel, text="Color", padx=3, bg=color)
         self.label[i][2]['command'] = lambda : self.changeColor(self.label[i][2], i)
         self.label[i][2].grid(row=i+1, column = 2, ipady=5)
         
@@ -918,11 +933,13 @@ class win_main(tkinter.Frame):
         newWin_entUser = tkinter.Entry(createWin)
         newWin_entUser.grid(row = 1, column = 1)
 
-        newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3, bg = "green")
+        #newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3, bg = "green")
+        newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
         newWin_btnOK['command'] = lambda btn = [newWin_entProj, newWin_entUser, createWin]: self.newWinConfirm(btn)
         newWin_btnOK.grid(row = 3, column = 0)
         
-        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, bg = "red", command = createWin.destroy)
+        #newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, bg = "red", command = createWin.destroy)
+        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
         newWin_btnCancel.grid(row = 3, column = 1)
         
     def newWinConfirm(self, info):
