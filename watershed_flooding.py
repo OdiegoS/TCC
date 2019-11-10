@@ -48,31 +48,31 @@ class Watershed(object):
          img_crop = i.crop( (left, upper, right, bottom) ).convert('L')
          img.append(np.array(img_crop) )
 
-      marker = [min(y, tam[1]), min(x, tam[0]), idx]
+      marker = [min(x, tam[0]), min(y, tam[1]), idx]
       size = img_crop.size
 
       return  self.watershed(img, len(img), size[0], size[1], marker)
 
    def watershed (self, image, qtd, width, height, marker):
       self.HFQ = []
-      self.L = np.zeros((qtd, height, width), np.int32)
+      self.L = np.zeros((qtd, width, height), np.int32)
       lista = [[] for _ in range(qtd)]
 
       self.L [marker[2]] [marker[0]] [marker[1]] = 1
       self.HFQ.append( [ (marker[0], marker[1]), 0 , marker[2]] )
       lista[marker[2]].append( [marker[0], marker[1]])
 
-      for k in range(width):
+      for k in range(height):
          self.L [marker[2]] [0] [k] = 2
          self.HFQ.append( [ (0, k), 0, marker[2]] )
-         self.L [marker[2]] [height-1] [k] = 2
-         self.HFQ.append( [ (height-1, k), 0, marker[2]] )
+         self.L [marker[2]] [width-1] [k] = 2
+         self.HFQ.append( [ (width-1, k), 0, marker[2]] )
 
-      for k in range(height):
+      for k in range(width):
          self.L [marker[2]] [k] [0] = 2
          self.HFQ.append( [ (k, 0), 0, marker[2]] )
-         self.L [marker[2]] [k] [width-1] = 2
-         self.HFQ.append( [ (k, width-1), 0, marker[2]] )
+         self.L [marker[2]] [k] [height-1] = 2
+         self.HFQ.append( [ (k, height-1), 0, marker[2]] )
       #sort = 0
       #self.inicio = time.time()
       flag = False
@@ -81,26 +81,26 @@ class Watershed(object):
          p = self.outHFQ()
          #for pixels in self.vizinhos[p[0][0]][p[0][1]]:
          for pixels in self.neighbors(width, height, ( p[0][0], p[0][1] ) ):
-            if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
+            if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
                self.L [p[2]] [pixels[0]] [pixels[1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (pixels[0], pixels[1]), image[p[2]][pixels[0]][pixels[1]], p[2])
                flag = True
                if(self.L [p[2]] [p[0][0]] [p[0][1]] == 1):
-                  lista[p[2]].append([pixels[1], pixels[0]])
+                  lista[p[2]].append([pixels[0], pixels[1]])
          if(p[2] > 0):
-            if( (self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
+            if( (self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
                self.L [p[2]-1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] - 1)
                flag = True
                if(self.L [p[2]-1] [p[0][0]] [p[0][1]] == 1):
-                  lista[p[2]-1].append([p[0][1], p[0][0]])
+                  lista[p[2]-1].append([p[0][0], p[0][1]])
          if( p[2] < (qtd-1) ):
-            if( (self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] <= height) and (pixels[1] >= 0 and pixels[1] <= width) ):
+            if( (self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
                self.L [p[2]+1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] + 1)
                flag = True
                if(self.L [p[2]+1] [p[0][0]] [p[0][1]] == 1):
-                  lista[p[2]+1].append([p[0][1], p[0][0]])
+                  lista[p[2]+1].append([p[0][0], p[0][1]])
          #sort_i = time.time()
          if(flag):
             self.sortHFQ()
@@ -113,8 +113,8 @@ class Watershed(object):
 
    def neighbors(self, width, height, pixel):
       return np.mgrid[
-            max(0, pixel[0] - 1):min(height, pixel[0] + 2),
-            max(0, pixel[1] - 1):min(width, pixel[1] + 2)
+            max(0, pixel[0] - 1):min(width, pixel[0] + 2),
+            max(0, pixel[1] - 1):min(height, pixel[1] + 2)
          ].reshape(2, -1).T
 
    def sortHFQ(self):

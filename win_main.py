@@ -668,7 +668,7 @@ class win_main(tkinter.Frame):
         if(self.canvas.shiftPress):
             self.canvas.shiftPress = False
             return
-        print("ainda passa aqui")
+        #print("ainda passa aqui")
         tam = self.projects.WRADIUS
         coord_x = [max(0, int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) - tam[0]), min(self.projects.getDimensionCurrImg()[0], int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) + tam[0]) ]
         coord_y = [max(0, int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) - tam[1]), min(self.projects.getDimensionCurrImg()[1], int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) + tam[1]) ]
@@ -1195,7 +1195,7 @@ class win_main(tkinter.Frame):
         #x = self.canvas.canvasx(event.x);
         #y = self.canvas.canvasy(event.y);
         
-        print ("%d, %d" %(x, y) )
+        #print ("%d, %d" %(x, y) )
 
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
