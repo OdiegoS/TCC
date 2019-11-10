@@ -358,7 +358,7 @@ class win_main(tkinter.Frame):
         self.mnuProject = tkinter.Menu(self.menuBar, tearoff=0)
         self.mnuProject.add_command(label="Create new project", command=self.createProj)
         self.mnuProject.add_command(label="Open project file", command=self.abrirProj)
-        self.mnuProject.add_command(label="Save Project",  command=self.projects.saveProject)
+        self.mnuProject.add_command(label="Save Project",  command=self.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
         self.mnuProject.add_command(label="Save Annotation", command=self.saveAnnotation)
         self.mnuProject.add_command(label="Export Count", command=self.exportCount)
@@ -963,6 +963,7 @@ class win_main(tkinter.Frame):
             
             self.projects.updateImagePaths(filedir)
             self.projects.openImage(filedir)
+            tkinter.messagebox.showwarning("Warning", "Image loaded.")
         else:
             self.projects.updateImagePaths()
             self.projects.openImage()
@@ -982,6 +983,7 @@ class win_main(tkinter.Frame):
         #images_ext = [".jpg",".gif",".png",".tiff"]
 
             limpar = self.projects.openBatch(dirname)
+            tkinter.messagebox.showwarning("Warning", "All images loaded.")
         else:
             limpar = self.projects.openBatch()
 
@@ -990,19 +992,27 @@ class win_main(tkinter.Frame):
 
         #self.saveSettings()
 
+    def saveProject(self):
+        self.projects.saveProject
+        tkinter.messagebox.showwarning("Warning", "Project saved.")
+    
+    
     def saveProjectAs(self):
 
         res = filedialog.asksaveasfilename(defaultextension=".neuronote", filetypes = ( ("Neuronote Files","*.neuronote"),
                                                          ("All Files", "*.*") ) )
         self.projects.saveProject(res)
+        tkinter.messagebox.showwarning("Warning", "Project saved.")
 
     def saveAnnotation(self):
         self.projects.saveAnnotation()
+        tkinter.messagebox.showwarning("Warning", "Annotation saved.")
 
     def exportCount(self):
         res = filedialog.asksaveasfilename(title="Export as ", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
         if(isinstance(res, str) and res != ""):
             self.projects.exportCount(res)
+            tkinter.messagebox.showwarning("Warning", "Count exported.")
 
     def loadComments(self):
 
