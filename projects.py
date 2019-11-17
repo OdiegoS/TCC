@@ -5,6 +5,9 @@ from PIL import Image
 from PIL import ImageTk
 import json
 from watershed_flooding import Watershed
+import numpy as np
+from copy import deepcopy
+import operator
 
 class Projects(object):
 
@@ -465,9 +468,10 @@ class Projects(object):
         count_file.write("## ID;\tComment;\tCount;\n")
 
         total_count = 0
+        count_t = self.count()
         for i in range(len(self.labels)):
-            count_file.write("\t{};\t{};\t{};\n".format(i, self.labels[i][0], 99) )
-            total_count += 99
+            count_file.write("\t{};\t{};\t{};\n".format(i, self.labels[i][0], count_t[i]) )
+            total_count += count_t[i]
 
         count_file.write("\t ;\tTOTAL;\t{};\n".format(total_count) )
 
@@ -518,6 +522,63 @@ class Projects(object):
 
     def resetImgScale(self):
         self.currScale = self.imgScale.index(1)
+
+    def count(self):
+        count = np.zeros(1000, dtype=int)
+        img_temp = deepcopy(self.annotation)
+        for z in range(self.sizeImages()):
+            img = self.getImage(z)
+            width, height = img.size
+
+            for x in range(width):
+                for y in range(height):
+                    label = img_temp[z].getpixel((x,y))
+                    if(label > 0):
+                        # mudar_vizinhos(z,x,y,label, img_temp)
+                        # count[label-1] = count[label-1] + 1
+
+                        array_temp = [ [z,x,y] ]
+                        array_temp_2 = [ [z-1,x,y] ]
+                        array_temp_3 = [ [z+1,x,y] ]
+                        while len(array_temp) > 0:
+                            z_t = array_temp[0][0]
+                            x_t = array_temp[0][1]
+                            y_t = array_temp[0][2]
+
+                            if(img_temp[z_t].getpixel((x_t, y_t)) == label):
+
+                                w, h = self.getImage(z_t).size
+
+                                if( (x_t  > 0) and (y_t > 0) and (img_temp[z_t].getpixel((x_t - 1, y_t -1)) == label) ):
+                                    array_temp.append( [z_t,x_t - 1, y_t -1] )
+                                if( (y_t > 0) and (img_temp[z_t].getpixel((x_t, y_t -1)) == label) ):
+                                    array_temp.append( [z_t,x_t, y_t -1] )
+                                if( (x_t  < (w-1) ) and (y_t > 0) and (img_temp[z_t].getpixel((x_t + 1, y_t -1)) == label) ):
+                                    array_temp.append( [z_t,x_t + 1, y_t -1] )
+
+                                if( (x_t  > 0) and (y_t < (h-1) ) and (img_temp[z_t].getpixel((x_t - 1, y_t + 1)) == label) ):
+                                    array_temp.append( [z_t,x_t - 1, y_t + 1] )
+                                if( (y_t < (h-1) ) and (img_temp[z_t].getpixel((x_t, y_t + 1)) == label) ):
+                                    array_temp.append( [z_t,x_t, y_t + 1] )
+                                if( (x_t  < (w-1) ) and (y_t < (h-1) ) and (img_temp[z_t].getpixel((x_t + 1, y_t + 1)) == label) ):
+                                    array_temp.append( [z_t,x_t + 1, y_t + 1] )
+
+                                if( (x_t  > 0) and (img_temp[z_t].getpixel((x_t - 1, y_t)) == label) ):
+                                    array_temp.append( [z_t,x_t - 1, y_t] )
+                                if( (x_t  < (w-1) ) and (img_temp[z_t].getpixel((x_t + 1, y_t)) == label) ):
+                                    array_temp.append( [z_t,x_t + 1, y_t] )
+
+                                if( (z_t  < 0 ) and (img_temp[z_t-1].getpixel((x_t, y_t)) == label) ):
+                                    array_temp.append( [z_t-1,x_t, y_t] )
+                                if( (z_t  < (self.sizeImages()-1) ) and (img_temp[z_t+1].getpixel((x_t, y_t)) == label) ):
+                                    array_temp.append( [z_t+1,x_t, y_t] )
+
+                                img_temp[z_t].putpixel( (x_t,y_t), 0 )
+                            del array_temp[0]
+                            array_temp.sort(key=operator.itemgetter(0))
+
+                        count[label-1] = count[label-1] + 1
+        return count
 
     def __getstate__(self):
         state = self.__dict__.copy()
