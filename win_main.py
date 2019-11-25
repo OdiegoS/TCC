@@ -793,7 +793,7 @@ class win_main(tkinter.Frame):
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = "black")
 
-    def redraw(self):
+    def redraw(self, zoom = False):
         self.canvas.delete("all")
 
         dimensionImg = self.projects.getDimensionCurrImg()
@@ -836,28 +836,28 @@ class win_main(tkinter.Frame):
         #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
 
+        if(zoom):
+            coord = [(self.status.x * self.projects.getImgScale() + 1) / size[0], (self.status.y * self.projects.getImgScale() + 1) / size[1]]
 
-        coord = [(self.status.x * self.projects.getImgScale() + 1) / size[0], (self.status.y * self.projects.getImgScale() + 1) / size[1]]
+            self.canvas.xview_moveto(coord[0])
+            self.canvas.yview_moveto(coord[1])
 
-        self.canvas.xview_moveto(coord[0])
-        self.canvas.yview_moveto(coord[1])
+            self.imgScrollHorizontal.update()
+            self.imgScrollVertical.update()
 
-        self.imgScrollHorizontal.update()
-        self.imgScrollVertical.update()
+            tamScroll = [self.imgScrollHorizontal.get()[1] - self.imgScrollHorizontal.get()[0], self.imgScrollVertical.get()[1] - self.imgScrollVertical.get()[0] ]
+            valor = [10,10]
 
-        tamScroll = [self.imgScrollHorizontal.get()[1] - self.imgScrollHorizontal.get()[0], self.imgScrollVertical.get()[1] - self.imgScrollVertical.get()[0] ]
-        valor = [10,10]
+            if ((tamScroll[0] + coord[0]) > 1.0):
+                valor[0] = int((tamScroll[0] + coord[0] - 1.0) * size[0])
+                valor[0] = int(valor[0])
 
-        if ((tamScroll[0] + coord[0]) > 1.0):
-            valor[0] = int((tamScroll[0] + coord[0] - 1.0) * size[0])
-            valor[0] = int(valor[0])
+            if( (tamScroll[1] + coord[1]) > 1.0):
+                valor[1] = int((tamScroll[1] + coord[1] - 1.0) * size[1])
+                valor[1] = int(valor[1])
 
-        if( (tamScroll[1] + coord[1]) > 1.0):
-            valor[1] = int((tamScroll[1] + coord[1] - 1.0) * size[1])
-            valor[1] = int(valor[1])
-
-        self.canvas.scan_mark(valor[0], valor[1])
-        self.canvas.scan_dragto(self.eventX, self.eventY, 1)
+            self.canvas.scan_mark(valor[0], valor[1])
+            self.canvas.scan_dragto(self.eventX, self.eventY, 1)
 
         self.updateStatus()
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
@@ -1327,7 +1327,7 @@ class win_main(tkinter.Frame):
         if(res):
             #self.dragX = 0;
             #self.dragY = 0;
-            self.redraw()
+            self.redraw(True)
 
     def showHideMask(self, event):
         self.projects.changeMaskClean()
