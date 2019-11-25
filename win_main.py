@@ -113,6 +113,7 @@ class win_main(tkinter.Frame):
         else:
             self.loadUser()
             self.loadComments()
+            self.selectLb(None, 0)
             if( new ):
                 tkinter.messagebox.showinfo(message="Welcome %s" %(self.projects.getCurrUserName()) )
             else:
