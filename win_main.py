@@ -41,6 +41,8 @@ class win_main(tkinter.Frame):
         #carregando settings (se houver)
         self.openSettings()
 
+        self.parent.focus_force()
+
     def openSettings(self):
         self.projects.openSettings()
         
