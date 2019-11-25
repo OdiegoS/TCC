@@ -1010,7 +1010,7 @@ class win_main(tkinter.Frame):
         #self.saveSettings()
 
     def saveProject(self):
-        self.projects.saveProject
+        self.projects.saveProject()
         tkinter.messagebox.showwarning("Warning", "Project saved.")
     
     
