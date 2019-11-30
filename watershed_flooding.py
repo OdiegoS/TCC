@@ -81,21 +81,21 @@ class Watershed(object):
          p = self.outHFQ()
          #for pixels in self.vizinhos[p[0][0]][p[0][1]]:
          for pixels in self.neighbors(width, height, ( p[0][0], p[0][1] ) ):
-            if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
+            if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[1] >= 0 and pixels[1] < width) and (pixels[0] >= 0 and pixels[0] < height) ):
                self.L [p[2]] [pixels[0]] [pixels[1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
-               self.inHFQ( (pixels[0], pixels[1]), image[p[2]][pixels[0]][pixels[1]], p[2])
+               self.inHFQ( (pixels[0], pixels[1]), image[p[2]][pixels[1]][pixels[0]], p[2])
                flag = True
                if(self.L [p[2]] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]].append([pixels[0], pixels[1]])
          if(p[2] > 0):
-            if( (self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
+            if( (self.L [p[2]-1] [p[0][0]] [p[0][1]] == 0) and (pixels[1] >= 0 and pixels[1] < width) and (pixels[0] >= 0 and pixels[0] < height) ):
                self.L [p[2]-1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] - 1)
                flag = True
                if(self.L [p[2]-1] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]-1].append([p[0][0], p[0][1]])
          if( p[2] < (qtd-1) ):
-            if( (self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0) and (pixels[0] >= 0 and pixels[0] < width) and (pixels[1] >= 0 and pixels[1] < height) ):
+            if( (self.L [p[2]+1] [p[0][0]] [p[0][1]] == 0) and (pixels[1] >= 0 and pixels[1] < width) and (pixels[0] >= 0 and pixels[0] < height) ):
                self.L [p[2]+1] [p[0][0]] [p[0][1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
                self.inHFQ( (p[0][0], p[0][1]), image[p[2]][p[0][0]][p[0][1]], p[2] + 1)
                flag = True
