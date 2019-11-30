@@ -538,8 +538,6 @@ class Projects(object):
                         # count[label-1] = count[label-1] + 1
 
                         array_temp = [ [z,x,y] ]
-                        array_temp_2 = [ [z-1,x,y] ]
-                        array_temp_3 = [ [z+1,x,y] ]
                         while len(array_temp) > 0:
                             z_t = array_temp[0][0]
                             x_t = array_temp[0][1]
@@ -568,7 +566,7 @@ class Projects(object):
                                 if( (x_t  < (w-1) ) and (img_temp[z_t].getpixel((x_t + 1, y_t)) == label) ):
                                     array_temp.append( [z_t,x_t + 1, y_t] )
 
-                                if( (z_t  < 0 ) and (img_temp[z_t-1].getpixel((x_t, y_t)) == label) ):
+                                if( (z_t  > 0 ) and (img_temp[z_t-1].getpixel((x_t, y_t)) == label) ):
                                     array_temp.append( [z_t-1,x_t, y_t] )
                                 if( (z_t  < (self.sizeImages()-1) ) and (img_temp[z_t+1].getpixel((x_t, y_t)) == label) ):
                                     array_temp.append( [z_t+1,x_t, y_t] )
