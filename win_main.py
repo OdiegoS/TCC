@@ -383,6 +383,7 @@ class win_main(tkinter.Frame):
         #self.mnuArquivo.add_command(label="Save Comments", state = "disabled", command=self.saveComments)
         #self.mnuArquivo.add_command(label="Save Comments As", command=self.saveCommentsAs)
         #self.mnuArquivo.add_command(label="Load Comments", command=self.loadComments)
+        self.mnuArquivo.add_command(label="Clear Image", command=self.reset)
         self.mnuArquivo.add_separator()
         self.mnuArquivo.add_command(label="Customize RoI", command=self.changeRoi)
         self.menuBar.add_cascade(label="Image", menu=self.mnuArquivo)
@@ -1012,6 +1013,11 @@ class win_main(tkinter.Frame):
 
         #self.saveSettings()
 
+    def reset(self):
+        self.projects.clearImage()
+        tkinter.messagebox.showwarning("Warning", "Image(s) cleaned.")
+        self.refresh()
+
     def saveProject(self):
         self.projects.saveProject()
         tkinter.messagebox.showwarning("Warning", "Project saved.")
@@ -1225,7 +1231,7 @@ class win_main(tkinter.Frame):
         #x = self.canvas.canvasx(event.x);
         #y = self.canvas.canvasy(event.y);
         
-        #print ("%d, %d" %(x, y) )
+        print ("%d, %d" %(x, y) )
 
         mask = self.projects.getMask(self.projects.getCurrImgID())
         annotation = self.projects.getAnnotation(self.projects.getCurrImgID())

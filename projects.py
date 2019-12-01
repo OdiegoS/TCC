@@ -407,6 +407,9 @@ class Projects(object):
 
         return limpar
 
+    def clearImage(self):
+        self.masks = deepcopy(self.masks_clean)
+
     def saveProject(self, path = None):
         if path == None:
             file = open(self.projectPath,"w", encoding='utf-8')
