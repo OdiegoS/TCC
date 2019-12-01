@@ -66,6 +66,19 @@ class Projects(object):
     def getAppPath(self):
         return self.appPath
 
+    def getExportPath(self):
+        path = self.getPathCurrImg()
+        pos = [path.replace("\\", "/")[::-1].find("/"), path[::-1].find(".")]
+        diretorio = path[:-pos[0]] + "gt_" + self.currUser[0]
+
+        if (os.path.isdir(diretorio)):
+            path = diretorio
+        else:
+            path = path[:-pos[0]]
+
+        print(path)
+        return path
+
     def colorDefault(self, tam):
 
         if(tam<8):

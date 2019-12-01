@@ -1035,7 +1035,9 @@ class win_main(tkinter.Frame):
         tkinter.messagebox.showwarning("Warning", "Annotation saved.")
 
     def exportCount(self):
-        res = filedialog.asksaveasfilename(title="Export as ", defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
+        path = self.projects.getExportPath()
+
+        res = filedialog.asksaveasfilename(title="Export as ", initialfile="count_"+self.projects.getCurrUserName(), initialdir=path, defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
         if(isinstance(res, str) and res != ""):
             self.projects.exportCount(res)
             tkinter.messagebox.showwarning("Warning", "Count exported.")
