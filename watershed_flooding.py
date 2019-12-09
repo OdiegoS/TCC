@@ -30,31 +30,38 @@ class Watershed(object):
          self.images_cv.append(Image.open(path + "/" + filename))
 
    def saveTestGradients(self, temp_img):
-      for tamK in [3,5,7,9]:
-         kern = cv2.getStructuringElement(cv2.MORPH_RECT,(tamK, tamK))
-         grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
-         k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Rect/{}/{}_{}x{}_morph_rect.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      kern_x = np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ])
+      kern_y = np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ])
+      grad_x = cv2.filter2D(temp_img, -1, kern_x)
+      grad_y = cv2.filter2D(temp_img, -1, kern_y)
+      grad = cv2.addWeighted(grad_x, 1, grad_y, 1, 0)
+      k = Image.fromarray(np.array(grad)).save("Teste/{}_sobel_test.png".format(len(self.images_cv)-1))
 
-         kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(tamK, tamK))
-         grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
-         k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Ellipse/{}/{}x{}_morph_ellip.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      # for tamK in [3,5,7,9]:
+      #    kern = cv2.getStructuringElement(cv2.MORPH_RECT,(tamK, tamK))
+      #    grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
+      #    k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Rect/{}/{}_{}x{}_morph_rect.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
 
-         kern = cv2.getStructuringElement(cv2.MORPH_CROSS,(tamK, tamK))
-         grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
-         k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Cross/{}/{}x{}_morph_cross.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      #    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(tamK, tamK))
+      #    grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
+      #    k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Ellipse/{}/{}x{}_morph_ellip.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
 
-         ddepth = cv2.CV_16S
-         grad = cv2.Laplacian(temp_img,ddepth, ksize=tamK)
-         k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Laplacian/{}/{}_{}x{}_lapla.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      #    kern = cv2.getStructuringElement(cv2.MORPH_CROSS,(tamK, tamK))
+      #    grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, kern)
+      #    k = Image.fromarray(np.array(grad)).save("Teste/Morphology/Cross/{}/{}x{}_morph_cross.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+
+      #    ddepth = cv2.CV_16S
+      #    grad = cv2.Laplacian(temp_img,ddepth, ksize=tamK)
+      #    k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Laplacian/{}/{}_{}x{}_lapla.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
    
-         grad = cv2.Sobel(temp_img,ddepth, 1, 0, ksize=tamK)
-         k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/x/{}/{}_{}x{}_sobel_x.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      #    grad = cv2.Sobel(temp_img,ddepth, 1, 0, ksize=tamK)
+      #    k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/x/{}/{}_{}x{}_sobel_x.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
 
-         grad = cv2.Sobel(temp_img,ddepth, 0, 1, ksize=tamK)
-         k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/y/{}/{}_{}x{}_sobel_y.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      #    grad = cv2.Sobel(temp_img,ddepth, 0, 1, ksize=tamK)
+      #    k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/y/{}/{}_{}x{}_sobel_y.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
 
-         grad = cv2.Sobel(temp_img,ddepth, 1, 1, ksize=tamK)
-         k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/xy/{}/{}_{}x{}_sobel_xy.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
+      #    grad = cv2.Sobel(temp_img,ddepth, 1, 1, ksize=tamK)
+      #    k = Image.fromarray(cv2.convertScaleAbs(np.array(grad))).save("Teste/Sobel/xy/{}/{}_{}x{}_sobel_xy.png".format(tamK, len(self.images_cv)-1, tamK, tamK))
       
    def dilate_images(self, image, size):
       self.images_cv = []
@@ -68,10 +75,11 @@ class Watershed(object):
          #img_temp = cv2.GaussianBlur( np.array(i), (3, 3), 0)
          img_temp = np.array(i)
          temp_img =  cv2.cvtColor(  img_temp, cv2.COLOR_BGR2GRAY)
+         #temp_img = img_temp
          gradient = cv2.morphologyEx( temp_img, cv2.MORPH_GRADIENT, self.kernel)
          k = Image.fromarray(np.array(gradient))
          self.images_cv.append( k )
-         #self.saveTestGradients(temp_img)
+         self.saveTestGradients(temp_img)
          
    def start(self, width, height, x, y, tam, index, dim):
       img = []
