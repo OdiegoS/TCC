@@ -464,6 +464,45 @@ class Projects(object):
         for i in range(len(self.annotation)):
             self.annotation[i].save(annotationDir[i])
 
+    def loadAnnotation(self):
+        if(self.isBatchImg()):
+            path = self.imagePaths[0]
+        else:
+            path = self.imagePaths
+
+        pos = [path.replace("\\", "/")[::-1].find("/"), path[::-1].find(".")]
+        diretorio = path[:-pos[0]] + "gt_" + self.currUser[0]
+
+        if (not os.path.isdir(diretorio) ):
+            return
+
+        images_ext = [".png"]
+
+        listFiles = os.listdir(diretorio)
+        listFiles.sort()
+        f = 0 
+        for filename in listFiles:
+            ext = os.path.splitext(filename)[1]
+            if ext.lower() not in images_ext:
+                continue
+            self.setAnnotation(f, Image.open(diretorio + "/" + filename))
+            f += 1
+
+        self.loadMask()
+
+    def loadMask(self):
+        for i in range(len(self.annotation)):
+            m = self.getMask(i)
+            width, height = self.annotation[i].size
+            for x in range(width):
+                for y in range(height):
+                    pixel_value = self.annotation[i].getpixel((x, y))
+                    if( (pixel_value > 0) and (pixel_value <= len(self.labels)) ):
+                         colorHex = self.getLabels(pixel_value - 1)[1]
+                         colorRGB = tuple(int(colorHex.lstrip('#')[i:i+2], 16) for i in (0, 2 ,4))
+                         m.putpixel( (x, y), colorRGB )
+            self.setMask(i, m)
+
     def exportCount(self, countDir):
         if(self.isBatchImg()):
             path = self.imagePaths[0]
