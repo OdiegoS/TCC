@@ -30,12 +30,34 @@ class Watershed(object):
          self.images_cv.append(Image.open(path + "/" + filename))
 
    def saveTestGradients(self, temp_img):
-      kern_x = np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ])
-      kern_y = np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ])
-      grad_x = cv2.filter2D(temp_img, -1, kern_x)
-      grad_y = cv2.filter2D(temp_img, -1, kern_y)
-      grad = cv2.addWeighted(grad_x, 1, grad_y, 1, 0)
-      k = Image.fromarray(np.array(grad)).save("Teste/{}_sobel_test.png".format(len(self.images_cv)-1))
+      # print(temp_img.dtype)
+      # temp_img = np.int16(temp_img)
+      # print(temp_img.dtype)
+
+      kern_x = np.asanyarray(np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ]), np.float32)
+      kern_y = np.asanyarray(np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ]), np.float32)
+      
+
+      #kern_x = np.asanyarray(np.array([ [-1,-2, -1],[0,0,0],[1,2,1] ]), np.float32)
+      #kern_y = np.asanyarray(np.array([ [1, 0, -1],[2,0,-2],[1,0,-1] ]), np.float32)
+
+      #kern_x = np.asanyarray(np.array([ [2, 2, 4, 2, 2],[1, 1, 2, 1, 1],[0, 0, 0, 0, 0], [-1, -1, -2, -1, -1], [-2, -2, -4, -2, -2] ]), np.float32)
+      #kern_y = np.asanyarray(np.array([ [2, 1, 0, -1, -2],[2, 1, 0, -1, -2],[4, 2, 0, -2, -4], [2, 1, 0, -1, -2], [2, 1, 0, -1, -2] ]), np.float32)
+   
+      grad_x = cv2.filter2D(temp_img, cv2.CV_32F, kern_x, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+      grad_y = cv2.filter2D(temp_img, cv2.CV_32F, kern_y, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+
+      grad_x = np.abs(grad_x)
+      grad_y = np.abs(grad_y)
+
+      #grad = cv2.addWeighted(grad_x, 1, grad_y, 1, 0)
+
+      #print(grad)
+      grad = grad_x + grad_y
+      #grad = np.int8(grad)
+      #grad = cv2.Sobel(temp_img, cv2.CV_16S, 0, 1, 3)
+      #grad = cv2.convertScaleAbs(grad)
+      k = (Image.fromarray(np.array(grad)).convert('L')).save("Teste/{}_sobel_test.png".format(len(self.images_cv)-1))
 
       # for tamK in [3,5,7,9]:
       #    kern = cv2.getStructuringElement(cv2.MORPH_RECT,(tamK, tamK))
