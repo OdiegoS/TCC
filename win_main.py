@@ -237,8 +237,8 @@ class win_main(tkinter.Frame):
 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0, ipady=5)
 
-        self.projects.loadAnnotation()
-        self.paint()
+        #self.projects.loadAnnotation()
+        #self.paint()
 
     def rmUser(self,user):
         
@@ -991,6 +991,7 @@ class win_main(tkinter.Frame):
             self.projects.updateImagePaths()
             self.projects.openImage()
 
+        self.projects.loadAnnotation()
         self.refresh()
         #self.saveSettings()
         
@@ -1011,6 +1012,7 @@ class win_main(tkinter.Frame):
             limpar = self.projects.openBatch()
 
         if ( self.projects.sizeImages() > 0) and (limpar == 0):
+            self.projects.loadAnnotation()
             self.refresh()
 
         #self.saveSettings()

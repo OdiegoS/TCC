@@ -481,12 +481,15 @@ class Projects(object):
         listFiles = os.listdir(diretorio)
         listFiles.sort()
         f = 0 
+        self.annotation = [ [] for x in range(len(self.images)) ]
         for filename in listFiles:
             ext = os.path.splitext(filename)[1]
             if ext.lower() not in images_ext:
                 continue
             self.setAnnotation(f, Image.open(diretorio + "/" + filename))
             f += 1
+            if(f >= len(self.images)):
+                break
 
         self.loadMask()
 
