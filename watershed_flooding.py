@@ -13,13 +13,39 @@ class Watershed(object):
 
    def __init__(self):
       self.kernel = np.ones((3,3), np.uint8)
+      self.kern_x = np.asanyarray(np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ]), np.float32)
+      self.kern_y = np.asanyarray(np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ]), np.float32)
+
+   def sobel_grad(self, temp_img):
+      grad_x = cv2.filter2D(temp_img, cv2.CV_32F, self.kern_x, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+      grad_y = cv2.filter2D(temp_img, cv2.CV_32F, self.kern_y, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+
+      grad_x = np.abs(grad_x)
+      grad_y = np.abs(grad_y)
+
+      grad = grad_x + grad_y
+
+      return grad
+
+   def morph_grad(self, temp_img):
+      grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, self.kernel)
+      return np.array(grad)
+
       
-   def dilate_images(self, image, size):
+   def dilate_images(self, image, size, tp_grad):
       self.images_cv = []
+
+      if(tp_grad == "morph"):
+         grad_func = self.morph_grad
+      elif(tp_grad == "sobel"):
+         grad_func = self.sobel_grad
+
       for i in image:
+         #img_temp = cv2.GaussianBlur( np.array(i), (3, 3), 0)
          temp_img =  np.array(i)
-         gradient = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, self.kernel)
-         self.images_cv.append( Image.fromarray(np.array(gradient)) )
+         temp_img =  cv2.cvtColor(temp_img, cv2.COLOR_BGR2GRAY)
+         gradient = grad_func(temp_img)
+         self.images_cv.append( Image.fromarray(gradient) )
 
       # self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
       # for x in range(size):
