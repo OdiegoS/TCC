@@ -32,7 +32,7 @@ class Projects(object):
         self.selectedLb = -1
         self.WRADIUS = [50, 50, 2]
         self.CLEAN = False
-        self.tp_grad = "morph"
+        self.GRAD = "Morphological"
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
         self.currScale = self.imgScale.index(1)
@@ -54,8 +54,9 @@ class Projects(object):
 
         self.openSettings()
 
-    def setRoI(self, x, y, z):
-        self.WRADIUS = [x, y, z]
+    def configure(self, win_x, win_y, win_z, gradient):
+        self.WRADIUS = [win_x, win_y, win_z]
+        self.GRAD = gradient
 
     def changeMaskClean(self):
         self.CLEAN = not self.CLEAN
@@ -365,7 +366,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.WRADIUS, self.tp_grad)
+        self.watershed.dilate_images(self.images, self.WRADIUS, self.GRAD)
 
         self.resetImgScale()
 
@@ -413,7 +414,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.WRADIUS, self.tp_grad)
+        self.watershed.dilate_images(self.images, self.WRADIUS, self.GRAD)
 
         self.resetImgScale()
 

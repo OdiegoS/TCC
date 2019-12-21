@@ -5,6 +5,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.colorchooser import *
 from tkinter.simpledialog import SimpleDialog
+from tkinter import ttk
 from projects import Projects
 from watershed_flooding import Watershed
 import numpy as np
@@ -383,8 +384,8 @@ class win_main(tkinter.Frame):
         #self.mnuImage.add_command(label="Save Comments", state = "disabled", command=self.saveComments)
         #self.mnuImage.add_command(label="Save Comments As", command=self.saveCommentsAs)
         #self.mnuImage.add_command(label="Load Comments", command=self.loadComments)
-        self.mnuImage.add_separator()
-        self.mnuImage.add_command(label="Customize RoI", command=self.changeRoi)
+        #self.mnuImage.add_separator()
+        
         self.menuBar.add_cascade(label="Image", menu=self.mnuImage)
  
         self.mnuAnnotation = tkinter.Menu(self.menuBar, tearoff=0)
@@ -392,6 +393,11 @@ class win_main(tkinter.Frame):
         self.mnuAnnotation.add_command(label="Save Annotation", command=self.saveAnnotation)
         self.mnuAnnotation.add_command(label="Export Count", command=self.exportCount)
         self.menuBar.add_cascade(label="Annotation", menu=self.mnuAnnotation)
+
+        #self.mnuConfigure = tkinter.Menu(self.menuBar, tearoff=0)
+        #self.mnuConfigure.add_command(label="Customize RoI", command=self.changeRoi)
+        #self.mnuConfigure.add_command(label="Select Gradient", command=self.changeGradient)
+        self.menuBar.add_cascade(label="Configure", command=self.configure)
  
         mnuAjuda = tkinter.Menu(self.menuBar, tearoff=0)
         mnuAjuda.add_command(label="About", command=self.sobre)
@@ -1085,51 +1091,63 @@ class win_main(tkinter.Frame):
     def sobre(self):
         pass
 
-    def changeRoi(self):
+    def configure(self):
         createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
         createWin.title("Insert new Values")
         centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
         createWin.geometry('+%d+%d' %(centralized[0], centralized[1]) )
+        createWin.minsize(width=270, height=150)
         createWin.resizable(width=False, height=False)
         createWin.focus_force()
         createWin.grab_set()
 
+        value_padx = (15,0)
+        value_pady = (15,0)
+
         newWin_lbX = tkinter.Label(createWin, text="X: ")
-        newWin_lbX.grid(row = 0, column = 0)
+        newWin_lbX.grid(row = 0, column = 0, padx=value_padx)
         newWin_lbY = tkinter.Label(createWin, text="Y: ")
-        newWin_lbY.grid(row = 1, column = 0)
+        newWin_lbY.grid(row = 1, column = 0, padx=value_padx)
         newWin_lbZ = tkinter.Label(createWin, text="Z: ")
-        newWin_lbZ.grid(row = 2, column = 0)
+        newWin_lbZ.grid(row = 2, column = 0, padx=value_padx)
 
         newWin_entX = tkinter.Entry(createWin)
         newWin_entX.insert(0, self.projects.WRADIUS[0])
-        newWin_entX.grid(row = 0, column = 1)
+        newWin_entX.grid(row = 0, column = 1, padx=value_padx)
         newWin_entY = tkinter.Entry(createWin)
         newWin_entY.insert(0, self.projects.WRADIUS[1])
-        newWin_entY.grid(row = 1, column = 1)
+        newWin_entY.grid(row = 1, column = 1, padx=value_padx)
         newWin_entZ = tkinter.Entry(createWin)
         newWin_entZ.insert(0, self.projects.WRADIUS[2])
-        newWin_entZ.grid(row = 2, column = 1)
+        newWin_entZ.grid(row = 2, column = 1, padx=value_padx)
+
+        newWin_lbX = tkinter.Label(createWin, text="Gradient: ")
+        newWin_lbX.grid(row = 3, column = 0, padx=value_padx, pady=value_pady)
+
+        options = ["Morphological", "Sobel", "Sobel 3D"]
+        newWin_op = ttk.Combobox(createWin, values=options, state='readonly')
+        newWin_op.current(options.index(self.projects.GRAD))
+        newWin_op.grid(row = 3, column = 1, padx=value_padx, pady=value_pady)
 
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
-        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, createWin]: self.confirmRoi(btn)
-        newWin_btnOK.grid(row = 3, column = 0)
+        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, newWin_op, createWin]: self.confirmRoi(btn)
+        newWin_btnOK.grid(row = 4, column = 0, padx=value_padx, pady=value_pady)
         
         newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
-        newWin_btnCancel.grid(row = 3, column = 1)
+        newWin_btnCancel.grid(row = 4, column = 1, padx=value_padx, pady=value_pady)
 
     def confirmRoi(self, info):
-        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) ):
-            tkinter.messagebox.showwarning(parent=info[3],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
+        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) or (len(info[3].get().replace(" ", "") ) == 0)):
+            tkinter.messagebox.showwarning(parent=info[4],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
             return
 
         if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
             tkinter.messagebox.showwarning(arent=info[3],title="Warning", message="Please, enter a valid number.")
             return
 
-        self.projects.setRoI(int(info[0].get()), int(info[1].get()), int(info[2].get()))
+        self.projects.configure(int(info[0].get()), int(info[1].get()), int(info[2].get()), info[3].get())
 
-        info[3].destroy()
+        info[4].destroy()
 
     def sair(self):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')

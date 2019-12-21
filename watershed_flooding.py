@@ -35,9 +35,11 @@ class Watershed(object):
    def dilate_images(self, image, size, tp_grad):
       self.images_cv = []
 
-      if(tp_grad == "morph"):
+      if(tp_grad == "Morphological"):
          grad_func = self.morph_grad
-      elif(tp_grad == "sobel"):
+      elif(tp_grad == "Sobel"):
+         grad_func = self.sobel_grad
+      elif(tp_grad == "Sobel 3D"):
          grad_func = self.sobel_grad
 
       for i in image:
