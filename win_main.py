@@ -743,7 +743,7 @@ class win_main(tkinter.Frame):
         # self.canvasAtualX = event.x
         # self.canvasAtualY = event.y
         
-    def changeColor(self, btn, i):
+    def changeColor(self, btn, i = None):
         color = askcolor()
 
         #print(color)
@@ -752,6 +752,7 @@ class win_main(tkinter.Frame):
             return
             
         btn.configure(bg=color[1])
+        if(i == None): return
         self.projects.updateLabelColor(i, color[1])
 
     def refresh(self):
@@ -801,7 +802,7 @@ class win_main(tkinter.Frame):
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = "black")
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = self.projects.WRADIUS[3])
 
     def redraw(self, zoom = False):
         self.canvas.delete("all")
@@ -873,7 +874,7 @@ class win_main(tkinter.Frame):
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         rec_x = self.status.x * self.projects.getImgScale()
         rec_y = self.status.y * self.projects.getImgScale()
-        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = "black")
+        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = self.projects.WRADIUS[3])
 
     def paint(self):
 
@@ -1111,7 +1112,9 @@ class win_main(tkinter.Frame):
         newWin_lbY.grid(row = 1, column = 0, padx=value_padx)
         newWin_lbZ = tkinter.Label(createWin, text="Z: ")
         newWin_lbZ.grid(row = 2, column = 0, padx=value_padx)
-
+        newWin_lbZ = tkinter.Label(createWin, text="Color: ")
+        newWin_lbZ.grid(row = 3, column = 0, padx=value_padx)
+        
         newWin_entX = tkinter.Entry(createWin)
         newWin_entX.insert(0, self.projects.WRADIUS[0])
         newWin_entX.grid(row = 0, column = 1, padx=value_padx)
@@ -1122,33 +1125,40 @@ class win_main(tkinter.Frame):
         newWin_entZ.insert(0, self.projects.WRADIUS[2])
         newWin_entZ.grid(row = 2, column = 1, padx=value_padx)
 
+        newWin_btnColor = tkinter.Button(createWin, width = 5, bg=self.projects.WRADIUS[3])
+        newWin_btnColor['command'] = lambda : self.changeColor(newWin_btnColor)
+        newWin_btnColor.grid(row = 3, column = 1, padx=value_padx)
+
         newWin_lbX = tkinter.Label(createWin, text="Gradient: ")
-        newWin_lbX.grid(row = 3, column = 0, padx=value_padx, pady=value_pady)
+        newWin_lbX.grid(row = 4, column = 0, padx=value_padx, pady=value_pady)
 
         options = ["Morphological", "Sobel", "Sobel 3D"]
         newWin_op = ttk.Combobox(createWin, values=options, state='readonly')
         newWin_op.current(options.index(self.projects.GRAD))
-        newWin_op.grid(row = 3, column = 1, padx=value_padx, pady=value_pady)
+        newWin_op.grid(row = 4, column = 1, padx=value_padx, pady=value_pady)
 
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
-        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, newWin_op, createWin]: self.confirmRoi(btn)
-        newWin_btnOK.grid(row = 4, column = 0, padx=value_padx, pady=value_pady)
+        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, newWin_btnColor, newWin_op, createWin]: self.confirmConfigure(btn)
+        newWin_btnOK.grid(row = 5, column = 0, padx=value_padx, pady=value_pady)
         
         newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
-        newWin_btnCancel.grid(row = 4, column = 1, padx=value_padx, pady=value_pady)
+        newWin_btnCancel.grid(row = 5, column = 1, padx=value_padx, pady=value_pady)
 
-    def confirmRoi(self, info):
-        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) or (len(info[3].get().replace(" ", "") ) == 0)):
-            tkinter.messagebox.showwarning(parent=info[4],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
+    def confirmConfigure(self, info):
+        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) or (len(info[4].get().replace(" ", "") ) == 0)):
+            tkinter.messagebox.showwarning(parent=info[5],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
             return
 
         if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
             tkinter.messagebox.showwarning(arent=info[3],title="Warning", message="Please, enter a valid number.")
             return
 
-        self.projects.configure(int(info[0].get()), int(info[1].get()), int(info[2].get()), info[3].get())
+        resp = self.projects.configure(int(info[0].get()), int(info[1].get()), int(info[2].get()), info[3].cget('bg'), info[4].get())
+        if(resp):
+            if(self.projects.changeGradient()):
+                self.refresh()
 
-        info[4].destroy()
+        info[5].destroy()
 
     def sair(self):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
@@ -1322,6 +1332,7 @@ class win_main(tkinter.Frame):
         #print(self.canvas.bbox("imgTag"));
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam[0], self.canvas.canvasy(event.y)-tam[1], self.canvas.canvasx(event.x)+tam[0], self.canvas.canvasy(event.y)+tam[1])
+        self.canvas.itemconfigure(self.canvas.rect, outline = self.projects.WRADIUS[3])
         
         self.updateStatus()
         #self.status.pack()

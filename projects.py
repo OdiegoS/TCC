@@ -32,7 +32,7 @@ class Projects(object):
         self.lastImagePath = None
         self.lastBatchPath = None
         self.selectedLb = -1
-        self.WRADIUS = [50, 50, 2]
+        self.WRADIUS = [50, 50, 2, "#000000"]
         self.CLEAN = False
         self.GRAD_SHOW = False
         self.GRAD = "Morphological"
@@ -57,8 +57,14 @@ class Projects(object):
 
         self.openSettings()
 
-    def configure(self, win_x, win_y, win_z, gradient):
-        self.WRADIUS = [win_x, win_y, win_z]
+    def configure(self, win_x, win_y, win_z, color, gradient):
+        self.WRADIUS = [win_x, win_y, win_z, color]
+
+        if(self.GRAD != gradient):
+            self.GRAD = gradient
+            return True
+        return False
+
 
     def changeMaskClean(self):
         self.CLEAN = not self.CLEAN
@@ -70,6 +76,13 @@ class Projects(object):
             self.images = self.gradient_images
         else:
             self.images = self.original_images
+
+    def changeGradient(self):
+        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+        if(self.GRAD_SHOW):
+            self.images = self.gradient_images
+            return True
+        return False
         
 
     def applyWatershed(self, coord):
@@ -664,6 +677,8 @@ class Projects(object):
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['images']
+        del state['original_images']
+        del state['gradient_images']
         del state['imagePaths']
         del state['masks']
         del state['masks_clean']
