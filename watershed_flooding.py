@@ -33,7 +33,7 @@ class Watershed(object):
 
       
    def dilate_images(self, image, size, tp_grad):
-      self.images_cv = []
+      images_cv = []
 
       if(tp_grad == "Morphological"):
          grad_func = self.morph_grad
@@ -47,14 +47,16 @@ class Watershed(object):
          temp_img =  np.array(i)
          temp_img =  cv2.cvtColor(temp_img, cv2.COLOR_BGR2GRAY)
          gradient = grad_func(temp_img)
-         self.images_cv.append( Image.fromarray(gradient) )
+         images_cv.append( Image.fromarray(gradient) )
 
       # self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
       # for x in range(size):
       #    for y in range(size):
       #       self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
 
-   def start(self, width, height, x, y, tam, index, dim):
+      return images_cv
+
+   def start(self, images_cv, width, height, x, y, tam, index, dim):
       img = []
       
       left = max(0, x-tam[0])
@@ -72,7 +74,7 @@ class Watershed(object):
       idx = min(index, tam[2])
       z_end = min(dim, index + tam[2]) + 1
 
-      for i in self.images_cv[z_start:z_end]:
+      for i in images_cv[z_start:z_end]:
          img_crop = i.crop( (left, upper, right, bottom) ).convert('L')
          img.append(np.array(img_crop) )
 

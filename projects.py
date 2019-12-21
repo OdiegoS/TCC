@@ -22,6 +22,8 @@ class Projects(object):
         self.masks_clean = []
         self.annotation = []
         self.images = []
+        self.original_images = []
+        self.gradient_images = []
         self.imagePaths = None
         self.defaultPath = "Projects/"
         self.defaultExtension = ".neuronote"
@@ -32,6 +34,7 @@ class Projects(object):
         self.selectedLb = -1
         self.WRADIUS = [50, 50, 2]
         self.CLEAN = False
+        self.GRAD_SHOW = False
         self.GRAD = "Morphological"
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
@@ -56,14 +59,22 @@ class Projects(object):
 
     def configure(self, win_x, win_y, win_z, gradient):
         self.WRADIUS = [win_x, win_y, win_z]
-        self.GRAD = gradient
 
     def changeMaskClean(self):
         self.CLEAN = not self.CLEAN
 
+    def changeGradImg(self):
+        self.GRAD_SHOW = not self.GRAD_SHOW
+
+        if(self.GRAD_SHOW):
+            self.images = self.gradient_images
+        else:
+            self.images = self.original_images
+        
+
     def applyWatershed(self, coord):
         size = self.getDimensionCurrImg()
-        return self.watershed.start(size[0], size[1], coord[0], coord[1], self.WRADIUS, self.getCurrImgID(), self.sizeImages())
+        return self.watershed.start(self.gradient_images, size[0], size[1], coord[0], coord[1], self.WRADIUS, self.getCurrImgID(), self.sizeImages())
 
     def getAppPath(self):
         return self.appPath
@@ -352,13 +363,13 @@ class Projects(object):
 
     def openImage(self, path = None):
         if(path == None):
-            self.images = [(Image.open(self.currUser[1]))]
+            self.original_images = [(Image.open(self.currUser[1]))]
         else:
-            self.images = [Image.open(path)]
+            self.original_images = [Image.open(path)]
 
-        self.masks = [ (self.createMask(self.images[0].size) ) ]
-        self.masks_clean = [ (self.createMask(self.images[0].size) ) ]
-        self.annotation = [(self.createAnnotation(self.images[0].size))]
+        self.masks = [ (self.createMask(self.original_images[0].size) ) ]
+        self.masks_clean = [ (self.createMask(self.original_images[0].size) ) ]
+        self.annotation = [(self.createAnnotation(self.original_images[0].size))]
             
         #self.currImg = -1
         self.currImgID = 0
@@ -366,7 +377,12 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+
+        if(self.GRAD_SHOW):
+            self.images = self.gradient_images
+        else:
+            self.images = self.original_images
 
         self.resetImgScale()
 
@@ -389,8 +405,10 @@ class Projects(object):
             
             if(limpar == 1):
                 self.imagePaths = []
-                self.images = []
+                self.original_images = []
+                self.gradient_images = []
                 self.masks = []
+                self.mask_clean = []
                 self.annotation = []
                 
                 if(path == None):
@@ -401,11 +419,11 @@ class Projects(object):
                 
                 limpar = 0
 
-            self.images.append(Image.open(path + "/" + filename))
+            self.original_images.append(Image.open(path + "/" + filename))
 
-            self.masks.append(self.createMask(self.images[-1].size) )
-            self.masks_clean.append(self.createMask(self.images[-1].size) )
-            self.annotation.append(self.createAnnotation(self.images[-1].size))
+            self.masks.append(self.createMask(self.original_images[-1].size) )
+            self.masks_clean.append(self.createMask(self.original_images[-1].size) )
+            self.annotation.append(self.createAnnotation(self.original_images[-1].size))
             self.imagePaths.append(path + "/" + filename)
 
         self.lastBatchPath = path
@@ -414,7 +432,12 @@ class Projects(object):
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
 
-        self.watershed.dilate_images(self.images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+
+        if(self.GRAD_SHOW):
+            self.images = self.gradient_images
+        else:
+            self.images = self.original_images
 
         self.resetImgScale()
 

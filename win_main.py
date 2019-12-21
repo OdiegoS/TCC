@@ -636,6 +636,7 @@ class win_main(tkinter.Frame):
         self.parent.bind("<Button-5>", self.moveImg) #Linux
 
         self.parent.bind("<F2>", self.showHideMask)
+        self.parent.bind("<F3>", self.showHideGrad)
         #print(self.canvas.bbox("imgTag"))
         ##########
 
@@ -1361,6 +1362,10 @@ class win_main(tkinter.Frame):
 
     def showHideMask(self, event):
         self.projects.changeMaskClean()
+        self.paint()
+
+    def showHideGrad(self, event):
+        self.projects.changeGradImg()
         self.paint()
 
 #########################################################################
