@@ -9,6 +9,7 @@ from tkinter import ttk
 from projects import Projects
 from watershed_flooding import Watershed
 import numpy as np
+import ProgressBar as pb
 
 
 class win_main(tkinter.Frame):
@@ -991,11 +992,11 @@ class win_main(tkinter.Frame):
                 return
             
             self.projects.updateImagePaths(filedir)
-            self.projects.openImage(filedir)
+            self.projects.openImage(self.parent, filedir)
             tkinter.messagebox.showwarning("Warning", "Image loaded.")
         else:
             self.projects.updateImagePaths()
-            self.projects.openImage()
+            self.projects.openImage(self.parent)
 
         self.projects.loadAnnotation()
         self.refresh()
@@ -1012,10 +1013,10 @@ class win_main(tkinter.Frame):
 
         #images_ext = [".jpg",".gif",".png",".tiff"]
 
-            limpar = self.projects.openBatch(dirname)
+            limpar = self.projects.openBatch(self.parent, dirname)
             tkinter.messagebox.showwarning("Warning", "All images loaded.")
         else:
-            limpar = self.projects.openBatch()
+            limpar = self.projects.openBatch(self.parent)
 
         if ( self.projects.sizeImages() > 0) and (limpar == 0):
             self.projects.loadAnnotation()
@@ -1049,7 +1050,7 @@ class win_main(tkinter.Frame):
 
         res = filedialog.asksaveasfilename(title="Export as ", initialfile="count_"+self.projects.getCurrUserName(), initialdir=path, defaultextension=".txt", filetypes = ( ("Text Files","*.txt"), ("All Files", "*.*") ) )
         if(isinstance(res, str) and res != ""):
-            self.projects.exportCount(res)
+            self.projects.exportCount(self.parent, res)
             tkinter.messagebox.showwarning("Warning", "Count exported.")
 
     def loadComments(self):
@@ -1155,7 +1156,7 @@ class win_main(tkinter.Frame):
 
         resp = self.projects.configure(int(info[0].get()), int(info[1].get()), int(info[2].get()), info[3].cget('bg'), info[4].get())
         if(resp):
-            if(self.projects.changeGradient()):
+            if(self.projects.changeGradient(self.parent)):
                 self.refresh()
 
         info[5].destroy()
@@ -1271,7 +1272,9 @@ class win_main(tkinter.Frame):
 
         tam = self.projects.WRADIUS
 
-        coord = self.projects.applyWatershed([x,y])
+        progressBar = pb.Loading(self.parent)
+
+        coord = self.projects.applyWatershed([x,y], k)
 
         limite_x = max(0, x-tam[0])
         limite_y = max(0, y-tam[1])
@@ -1295,6 +1298,7 @@ class win_main(tkinter.Frame):
         self.projects.setMask(self.projects.getCurrImgID(), mask)
         self.projects.setAnnotation(self.projects.getCurrImgID(), annotation)
         '''
+        progressBar.close()
         self.paint()
 
     def motion(self, event):

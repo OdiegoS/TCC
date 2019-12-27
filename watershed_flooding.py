@@ -7,6 +7,7 @@ import sys
 import time
 import cv2
 import operator
+import ProgressBar as pb
 
 
 class Watershed(object):
@@ -32,8 +33,10 @@ class Watershed(object):
       return np.array(grad)
 
       
-   def dilate_images(self, image, size, tp_grad):
+   def dilate_images(self, tk_main, image, size, tp_grad):
       images_cv = []
+
+      progressBar = pb.ProgressBar(tk_main)
 
       if(tp_grad == "Morphological"):
          grad_func = self.morph_grad
@@ -42,12 +45,16 @@ class Watershed(object):
       elif(tp_grad == "Sobel 3D"):
          grad_func = self.sobel_grad
 
+      n_progressBar = 100 // len(image)
       for i in image:
          #img_temp = cv2.GaussianBlur( np.array(i), (3, 3), 0)
          temp_img =  np.array(i)
          temp_img =  cv2.cvtColor(temp_img, cv2.COLOR_BGR2GRAY)
          gradient = grad_func(temp_img)
          images_cv.append( Image.fromarray(gradient) )
+         progressBar.updatingBar(n_progressBar)
+
+      progressBar.close()
 
       # self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
       # for x in range(size):
@@ -56,7 +63,7 @@ class Watershed(object):
 
       return images_cv
 
-   def start(self, images_cv, width, height, x, y, tam, index, dim):
+   def start(self, images_cv, width, height, x, y, tam, index, dim, progressBar):
       img = []
       
       left = max(0, x-tam[0])
@@ -81,9 +88,9 @@ class Watershed(object):
       marker = [min(x, tam[0]), min(y, tam[1]), idx]
       size = img_crop.size
 
-      return  self.watershed(img, len(img), size[0], size[1], marker)
+      return  self.watershed(img, len(img), size[0], size[1], marker, progressBar)
 
-   def watershed (self, image, qtd, width, height, marker):
+   def watershed (self, image, qtd, width, height, marker, progressBar):
       self.HFQ = []
       self.L = np.zeros((qtd, width, height), np.int32)
       lista = [[] for _ in range(qtd)]
@@ -134,6 +141,7 @@ class Watershed(object):
          #sort_i = time.time()
          if(flag):
             self.sortHFQ()
+         progressBar.updatingBar()
          #sort_f = time.time()
          #sort = sort + (sort_f - sort_i)
       #self.fim = time.time()

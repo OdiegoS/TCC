@@ -8,6 +8,7 @@ from watershed_flooding import Watershed
 import numpy as np
 from copy import deepcopy
 import operator
+import ProgressBar as pb
 
 class Projects(object):
 
@@ -77,17 +78,17 @@ class Projects(object):
         else:
             self.images = self.original_images
 
-    def changeGradient(self):
-        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+    def changeGradient(self, tk_main):
+        self.gradient_images = self.watershed.dilate_images(tk_main,self.original_images, self.WRADIUS, self.GRAD)
         if(self.GRAD_SHOW):
             self.images = self.gradient_images
             return True
         return False
         
 
-    def applyWatershed(self, coord):
+    def applyWatershed(self, coord, progressBar):
         size = self.getDimensionCurrImg()
-        return self.watershed.start(self.gradient_images, size[0], size[1], coord[0], coord[1], self.WRADIUS, self.getCurrImgID(), self.sizeImages())
+        return self.watershed.start(self.gradient_images, size[0], size[1], coord[0], coord[1], self.WRADIUS, self.getCurrImgID(), self.sizeImages(), progressBar)
 
     def getAppPath(self):
         return self.appPath
@@ -374,7 +375,7 @@ class Projects(object):
     def getLastImagePath(self):
         return self.lastImagePath
 
-    def openImage(self, path = None):
+    def openImage(self,  tk_main, path = None):
         if(path == None):
             self.original_images = [(Image.open(self.currUser[1]))]
         else:
@@ -390,7 +391,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
-        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD)
 
         if(self.GRAD_SHOW):
             self.images = self.gradient_images
@@ -401,7 +402,7 @@ class Projects(object):
 
         #self.saveProject()
 
-    def openBatch(self, path = None):
+    def openBatch(self, tk_main, path = None):
         limpar = 1
         images_ext = [".jpg",".gif",".png",".tiff"]
 
@@ -445,7 +446,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
 
-        self.gradient_images = self.watershed.dilate_images(self.original_images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD)
 
         if(self.GRAD_SHOW):
             self.images = self.gradient_images
@@ -544,7 +545,7 @@ class Projects(object):
                          m.putpixel( (x, y), colorRGB )
             self.setMask(i, m)
 
-    def exportCount(self, countDir):
+    def exportCount(self, tb_main, countDir):
         if(self.isBatchImg()):
             path = self.imagePaths[0]
         else:
@@ -564,7 +565,7 @@ class Projects(object):
         count_file.write("## ID;\tComment;\tCount;\n")
 
         total_count = 0
-        count_t = self.count()
+        count_t = self.count(tb_main)
         for i in range(len(self.labels)):
             count_file.write("\t{};\t{};\t{};\n".format(i, self.labels[i][0], count_t[i]) )
             total_count += count_t[i]
@@ -619,9 +620,13 @@ class Projects(object):
     def resetImgScale(self):
         self.currScale = self.imgScale.index(1)
 
-    def count(self):
+    def count(self, tb_main):
         count = np.zeros(1000, dtype=int)
         img_temp = deepcopy(self.annotation)
+
+        progressBar = pb.ProgressBar(tb_main)
+        n_progressBar = 100 // self.sizeImages()
+
         for z in range(self.sizeImages()):
             img = self.getImage(z)
             width, height = img.size
@@ -672,6 +677,8 @@ class Projects(object):
                             array_temp.sort(key=operator.itemgetter(0))
 
                         count[label-1] = count[label-1] + 1
+            progressBar.updatingBar(n_progressBar)
+        progressBar.close()
         return count
 
     def __getstate__(self):
