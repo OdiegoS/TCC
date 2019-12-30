@@ -1274,7 +1274,7 @@ class win_main(tkinter.Frame):
 
         progressBar = pb.Loading(self.parent)
 
-        coord = self.projects.applyWatershed([x,y], k)
+        coord = self.projects.applyWatershed([x,y], progressBar)
 
         limite_x = max(0, x-tam[0])
         limite_y = max(0, y-tam[1])
