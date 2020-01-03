@@ -16,6 +16,7 @@ class Watershed(object):
       self.kernel = np.ones((3,3), np.uint8)
       self.kern_x = np.asanyarray(np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ]), np.float32)
       self.kern_y = np.asanyarray(np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ]), np.float32)
+      self.kernel_z = np.asanyarray(np.array([ [1, 2, 1],[2, 4, 2],[1, 2, 1] ]), np.float32)
 
    def sobel_grad(self, temp_img):
       grad_x = cv2.filter2D(temp_img, cv2.CV_32F, self.kern_x, None, (-1,-1), 0, cv2.BORDER_REFLECT)
@@ -28,12 +29,58 @@ class Watershed(object):
 
       return grad
 
+   def sobel_z(self, image, idx):
+
+      if(idx == 0):
+         temp_img1 = np.array(image[0])
+      else:
+         temp_img1 =  np.array(image[idx-1])
+
+      if(idx == (len(image)-1) ):
+         temp_img2 = np.array(image[len(image)-1])
+      else:
+         temp_img2 = np.array(image[idx+1])
+
+      temp_img1 =  cv2.cvtColor(temp_img1, cv2.COLOR_BGR2GRAY)
+      temp_img2 =  cv2.cvtColor(temp_img2, cv2.COLOR_BGR2GRAY)
+
+      grad_1 = cv2.filter2D(temp_img1, cv2.CV_32F, self.kernel_z, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+      grad_2 = cv2.filter2D(temp_img2, cv2.CV_32F, self.kernel_z, None, (-1,-1), 0, cv2.BORDER_REFLECT)
+
+      # grad_1 = np.abs(grad_1)
+      # grad_2 = np.abs(grad_2)
+      # grad = grad_1 - grad_2
+
+      grad = grad_1 - grad_2
+      grad = np.abs(grad)
+
+      return grad
+
+   def sobel3d_grad(self, image, progressBar):
+      images_cv = []
+
+      n_progressBar = 100 // len(image)
+      for i in range(len(image)):
+         temp_img =  np.array(image[i])
+         temp_img =  cv2.cvtColor(temp_img, cv2.COLOR_BGR2GRAY)
+
+         gradient_xy = self.sobel_grad(temp_img)
+         if(len(image) > 1):
+            gradient_z = self.sobel_z(image,i)
+            grad = gradient_xy + gradient_z
+         else:
+            grad = gradient_xy
+         progressBar.updatingBar(n_progressBar)
+
+         images_cv.append( Image.fromarray(grad) )
+      progressBar.close()
+      return images_cv
+
    def morph_grad(self, temp_img):
       grad = cv2.morphologyEx(temp_img, cv2.MORPH_GRADIENT, self.kernel)
       return np.array(grad)
 
-      
-   def dilate_images(self, tk_main, image, size, tp_grad):
+   def dilate_images(self, tk_main, image, size, tp_grad, peso):
       images_cv = []
 
       progressBar = pb.ProgressBar(tk_main)
@@ -43,7 +90,9 @@ class Watershed(object):
       elif(tp_grad == "Sobel"):
          grad_func = self.sobel_grad
       elif(tp_grad == "Sobel 3D"):
-         grad_func = self.sobel_grad
+         self.kernel_z = peso * self.kernel_z
+         images_cv = self.sobel3d_grad(image, progressBar)
+         return images_cv
 
       n_progressBar = 100 // len(image)
       for i in image:

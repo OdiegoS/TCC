@@ -37,6 +37,7 @@ class Projects(object):
         self.CLEAN = False
         self.GRAD_SHOW = False
         self.GRAD = "Morphological"
+        self.SOBEL3_PESO = 1/16
 
         self.imgScale = [0.125, 0.25, 0.5, 1, 2, 4, 8]
         self.currScale = self.imgScale.index(1)
@@ -58,11 +59,13 @@ class Projects(object):
 
         self.openSettings()
 
-    def configure(self, win_x, win_y, win_z, color, gradient):
+    def configure(self, win_x, win_y, win_z, color, gradient, peso = None):
         self.WRADIUS = [win_x, win_y, win_z, color]
-
-        if(self.GRAD != gradient):
+        
+        if( (self.GRAD != gradient) or (self.SOBEL3_PESO != peso) ):
             self.GRAD = gradient
+            if(peso != None):
+                self.SOBEL3_PESO = float(peso)
             return True
         return False
 
@@ -79,7 +82,8 @@ class Projects(object):
             self.images = self.original_images
 
     def changeGradient(self, tk_main):
-        self.gradient_images = self.watershed.dilate_images(tk_main,self.original_images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(tk_main,self.original_images, self.WRADIUS, self.GRAD, self.SOBEL3_PESO)
+
         if(self.GRAD_SHOW):
             self.images = self.gradient_images
             return True
@@ -391,7 +395,7 @@ class Projects(object):
         self.users[ self.currUserID ][2] = -1
         self.currUser = self.users[ self.currUserID ]
 
-        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD)
+        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD, self.SOBEL3_PESO)
 
         if(self.GRAD_SHOW):
             self.images = self.gradient_images
@@ -445,8 +449,8 @@ class Projects(object):
         self.users[ self.currUserID ][1] = path
         self.users[ self.currUserID ][2] = 0
         self.currUser = self.users[ self.currUserID ]
-
-        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD)
+        
+        self.gradient_images = self.watershed.dilate_images(tk_main, self.original_images, self.WRADIUS, self.GRAD, self.SOBEL3_PESO)
 
         if(self.GRAD_SHOW):
             self.images = self.gradient_images

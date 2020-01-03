@@ -1107,59 +1107,92 @@ class win_main(tkinter.Frame):
         value_padx = (15,0)
         value_pady = (15,0)
 
-        newWin_lbX = tkinter.Label(createWin, text="X: ")
-        newWin_lbX.grid(row = 0, column = 0, padx=value_padx)
-        newWin_lbY = tkinter.Label(createWin, text="Y: ")
-        newWin_lbY.grid(row = 1, column = 0, padx=value_padx)
-        newWin_lbZ = tkinter.Label(createWin, text="Z: ")
-        newWin_lbZ.grid(row = 2, column = 0, padx=value_padx)
-        newWin_lbZ = tkinter.Label(createWin, text="Color: ")
-        newWin_lbZ.grid(row = 3, column = 0, padx=value_padx)
+        createWin.newWin_lbX = tkinter.Label(createWin, text="X: ")
+        createWin.newWin_lbX.grid(row = 0, column = 0, padx=value_padx)
+        createWin.newWin_lbY = tkinter.Label(createWin, text="Y: ")
+        createWin.newWin_lbY.grid(row = 1, column = 0, padx=value_padx)
+        createWin.newWin_lbZ = tkinter.Label(createWin, text="Z: ")
+        createWin.newWin_lbZ.grid(row = 2, column = 0, padx=value_padx)
+        createWin.newWin_lbZ = tkinter.Label(createWin, text="Color: ")
+        createWin.newWin_lbZ.grid(row = 3, column = 0, padx=value_padx)
         
-        newWin_entX = tkinter.Entry(createWin)
-        newWin_entX.insert(0, self.projects.WRADIUS[0])
-        newWin_entX.grid(row = 0, column = 1, padx=value_padx)
-        newWin_entY = tkinter.Entry(createWin)
-        newWin_entY.insert(0, self.projects.WRADIUS[1])
-        newWin_entY.grid(row = 1, column = 1, padx=value_padx)
-        newWin_entZ = tkinter.Entry(createWin)
-        newWin_entZ.insert(0, self.projects.WRADIUS[2])
-        newWin_entZ.grid(row = 2, column = 1, padx=value_padx)
+        createWin.newWin_entX = tkinter.Entry(createWin)
+        createWin.newWin_entX.insert(0, self.projects.WRADIUS[0])
+        createWin.newWin_entX.grid(row = 0, column = 1, padx=value_padx)
+        createWin.newWin_entY = tkinter.Entry(createWin)
+        createWin.newWin_entY.insert(0, self.projects.WRADIUS[1])
+        createWin.newWin_entY.grid(row = 1, column = 1, padx=value_padx)
+        createWin.newWin_entZ = tkinter.Entry(createWin)
+        createWin.newWin_entZ.insert(0, self.projects.WRADIUS[2])
+        createWin.newWin_entZ.grid(row = 2, column = 1, padx=value_padx)
 
-        newWin_btnColor = tkinter.Button(createWin, width = 5, bg=self.projects.WRADIUS[3])
-        newWin_btnColor['command'] = lambda : self.changeColor(newWin_btnColor)
-        newWin_btnColor.grid(row = 3, column = 1, padx=value_padx)
+        createWin.newWin_btnColor = tkinter.Button(createWin, width = 5, bg=self.projects.WRADIUS[3])
+        createWin.newWin_btnColor['command'] = lambda : self.changeColor(createWin.newWin_btnColor)
+        createWin.newWin_btnColor.grid(row = 3, column = 1, padx=value_padx)
 
-        newWin_lbX = tkinter.Label(createWin, text="Gradient: ")
-        newWin_lbX.grid(row = 4, column = 0, padx=value_padx, pady=value_pady)
+        createWin.newWin_lbX = tkinter.Label(createWin, text="Gradient: ")
+        createWin.newWin_lbX.grid(row = 4, column = 0, padx=value_padx, pady=value_pady)
 
         options = ["Morphological", "Sobel", "Sobel 3D"]
-        newWin_op = ttk.Combobox(createWin, values=options, state='readonly')
-        newWin_op.current(options.index(self.projects.GRAD))
-        newWin_op.grid(row = 4, column = 1, padx=value_padx, pady=value_pady)
+        createWin.newWin_op = ttk.Combobox(createWin, values=options, state='readonly')
+        createWin.newWin_op.current(options.index(self.projects.GRAD))
+        createWin.newWin_op.grid(row = 4, column = 1, padx=value_padx, pady=value_pady)
 
-        newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
-        newWin_btnOK['command'] = lambda btn = [newWin_entX, newWin_entY, newWin_entZ, newWin_btnColor, newWin_op, createWin]: self.confirmConfigure(btn)
-        newWin_btnOK.grid(row = 5, column = 0, padx=value_padx, pady=value_pady)
+        createWin.newWin_op.bind("<<ComboboxSelected>>", lambda event: self.comboEvent(createWin))
+        self.comboEvent(createWin)
+
+        createWin.newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
+        createWin.newWin_btnOK['command'] = lambda btn = createWin: self.confirmConfigure(btn)
+        createWin.newWin_btnOK.grid(row = 6, column = 0, padx=value_padx, pady=value_pady)
         
-        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
-        newWin_btnCancel.grid(row = 5, column = 1, padx=value_padx, pady=value_pady)
+        createWin.newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
+        createWin.newWin_btnCancel.grid(row = 6, column = 1, padx=value_padx, pady=value_pady)
 
-    def confirmConfigure(self, info):
-        if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) or (len(info[2].get().replace(" ", "") ) == 0) or (len(info[4].get().replace(" ", "") ) == 0)):
-            tkinter.messagebox.showwarning(parent=info[5],title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
+    def confirmConfigure(self, createWin):
+        newWin_entX, newWin_entY, newWin_entZ, newWin_btnColor, newWin_op = [createWin.newWin_entX, createWin.newWin_entY, createWin.newWin_entZ, createWin.newWin_btnColor, createWin.newWin_op]
+        if( (len(newWin_entX.get().replace(" ", "") ) == 0) or (len(newWin_entY.get().replace(" ", "") ) == 0) or (len(newWin_entZ.get().replace(" ", "") ) == 0) or (len(newWin_op.get().replace(" ", "") ) == 0)):
+            tkinter.messagebox.showwarning(parent=createWin,title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
             return
 
-        if( (not info[0].get().isdigit()) or (not info[1].get().isdigit()) or (not info[2].get().isdigit()) ):
-            tkinter.messagebox.showwarning(arent=info[3],title="Warning", message="Please, enter a valid number.")
+        if( (not newWin_entX.get().isdigit()) or (not newWin_entY.get().isdigit()) or (not newWin_entZ.get().isdigit()) ):
+            tkinter.messagebox.showwarning(parent=createWin,title="Warning", message="Please, enter a valid number.")
             return
 
-        resp = self.projects.configure(int(info[0].get()), int(info[1].get()), int(info[2].get()), info[3].cget('bg'), info[4].get())
+        if(hasattr(createWin, 'newWin_entPeso')):
+            newWin_entPeso = createWin.newWin_entPeso
+            if(len(newWin_entPeso.get().replace(" ", "") ) == 0):
+                tkinter.messagebox.showwarning(parent=createWin,title="Warning", message="A field name has been left blank.\nEnter a number in the field before proceeding.")
+                return
+            else:
+                campoPeso = newWin_entPeso.get().replace(",", ".")
+                try:
+                    float(campoPeso)
+                except ValueError:
+                    tkinter.messagebox.showwarning(parent=createWin,title="Warning", message="Please, enter a valid number.")
+                    return
+            resp = self.projects.configure(int(newWin_entX.get()), int(newWin_entY.get()), int(newWin_entZ.get()), newWin_btnColor.cget('bg'), newWin_op.get(), campoPeso)
+        else:
+            resp = self.projects.configure(int(newWin_entX.get()), int(newWin_entY.get()), int(newWin_entZ.get()), newWin_btnColor.cget('bg'), newWin_op.get())
+
         if(resp):
             if(self.projects.changeGradient(self.parent)):
                 self.refresh()
 
-        info[5].destroy()
+        createWin.destroy()
+
+    def comboEvent(self, createWin):
+        if(createWin.newWin_op.get() == "Sobel 3D"):
+            createWin.newWin_lbPeso = tkinter.Label(createWin, text="Peso Sobel 3D: ")
+            createWin.newWin_lbPeso.grid(row = 5, column = 0, padx=(15,0))
+            createWin.newWin_entPeso = tkinter.Entry(createWin)
+            createWin.newWin_entPeso.insert(0, self.projects.SOBEL3_PESO)
+            createWin.newWin_entPeso.grid(row = 5, column = 1, padx=(15,0))
+        elif(hasattr(createWin, 'newWin_lbPeso')):
+            createWin.newWin_lbPeso.destroy()
+            del(createWin.newWin_lbPeso)
+            createWin.newWin_entPeso.destroy()
+            del(createWin.newWin_entPeso)
+
 
     def sair(self):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
