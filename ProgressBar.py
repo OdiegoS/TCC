@@ -24,7 +24,6 @@ class ProgressBar(object):
         self.count = self.count + value
         print(self.count)
         self.progress['value']=self.count
-        #self.tk.update_idletasks()
         self.progress.update()
 
     def close(self):

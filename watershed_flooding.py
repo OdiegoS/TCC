@@ -47,10 +47,6 @@ class Watershed(object):
       grad_1 = cv2.filter2D(temp_img1, cv2.CV_32F, self.kernel_z, None, (-1,-1), 0, cv2.BORDER_REFLECT)
       grad_2 = cv2.filter2D(temp_img2, cv2.CV_32F, self.kernel_z, None, (-1,-1), 0, cv2.BORDER_REFLECT)
 
-      # grad_1 = np.abs(grad_1)
-      # grad_2 = np.abs(grad_2)
-      # grad = grad_1 - grad_2
-
       grad = grad_1 - grad_2
       grad = np.abs(grad)
 
@@ -105,11 +101,6 @@ class Watershed(object):
 
       progressBar.close()
 
-      # self.vizinhos = [[0 for y in range(size)] for x in range(size) ] 
-      # for x in range(size):
-      #    for y in range(size):
-      #       self.vizinhos[x][y] = self.neighbors(size, size, (x,y))
-
       return images_cv
 
    def start(self, images_cv, width, height, x, y, tam, index, dim, progressBar):
@@ -159,13 +150,10 @@ class Watershed(object):
          self.HFQ.append( [ (k, 0), 0, marker[2]] )
          self.L [marker[2]] [k] [height-1] = 2
          self.HFQ.append( [ (k, height-1), 0, marker[2]] )
-      #sort = 0
-      #self.inicio = time.time()
       flag = False
       while len(self.HFQ) > 0:
          flag = False
          p = self.outHFQ()
-         #for pixels in self.vizinhos[p[0][0]][p[0][1]]:
          for pixels in self.neighbors(width, height, ( p[0][0], p[0][1] ) ):
             if( (self.L [p[2]] [pixels[0]] [pixels[1]] == 0) and (pixels[1] >= 0 and pixels[1] < width) and (pixels[0] >= 0 and pixels[0] < height) ):
                self.L [p[2]] [pixels[0]] [pixels[1]] = self.L [p[2]] [p[0][0]] [p[0][1]]
@@ -187,15 +175,9 @@ class Watershed(object):
                flag = True
                if(self.L [p[2]+1] [p[0][0]] [p[0][1]] == 1):
                   lista[p[2]+1].append([p[0][0], p[0][1]])
-         #sort_i = time.time()
          if(flag):
             self.sortHFQ()
          progressBar.updatingBar()
-         #sort_f = time.time()
-         #sort = sort + (sort_f - sort_i)
-      #self.fim = time.time()
-      #geral = (self.fim - self.inicio) - sort
-      #print("Tempo do sort: {}\nTempo do resto: {}\n####################\nTempo do sort: {}\nTempo do resto: {}".format(sort,geral,sort/60,geral/60))
       return lista
 
    def neighbors(self, width, height, pixel):

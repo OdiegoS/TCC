@@ -44,10 +44,6 @@ class Projects(object):
 
         self.watershed = Watershed()
 
-        # self.imgScale = 1.0
-        # self.maxScale = 5.0
-        # self.minScale = 0.25
-        # self.scaleRate = 0.25
         self.appPath = os.path.dirname(os.path.realpath(__file__))
 
         if (not os.path.isfile("settings") ):
@@ -187,10 +183,6 @@ class Projects(object):
         if(type(value) is int):
             if(self.currUserID == value):
                 return True
-        '''
-        elif (self.currUser[0] == value):
-                return True
-        '''
         return False
 
     def updateCurrUser(self, pos):
@@ -278,20 +270,14 @@ class Projects(object):
         self.users[ self.currUserID ][2] = self.getCurrImgID()
         self.currUser = self.users[ self.currUserID ]
 
-        #self.saveProject()
-
     def openSettings(self):
         file = open("settings","r", encoding='utf-8')
-        # self.projectPath = file.read()
-        # self.projectPath = self.projectPath
-
+        
         try:
             self.projectPath = json.load(file)
         except ValueError:
             self.projectPath = ""
 
-        # self.__setstate__(json.load(file))
-        
         file.close()
 
     def notExistProject(self):
@@ -311,23 +297,7 @@ class Projects(object):
 
         self.__setstate__(json.load(file))
 
-        # project = file.read().splitlines()
         file.close()
-
-        # self.users = [[0,0,0]]
-        #
-        # for i in range(2, 2*int(project[1])+int(project[1])+1, 3) :
-        #     if project[0] == project[i]:
-        #         self.currUserID = self.sizeUsers() - 1
-        #
-        #     self.users.append( [project[i], project[i+1], int(project[i+2]) ] )
-        #
-        # del self.users[0]
-        # self.updateCurrUser(self.currUserID)
-        #
-        # data = project[2*int(project[1])+int(project[1])+2 : ]
-        #
-        # self.loadComments(data)
 
     def updateImagePaths(self, path = None):
         if path == None:
@@ -350,9 +320,6 @@ class Projects(object):
 
     def newProject(self, projectName, userName):
         file = open(self.defaultPath + projectName + self.defaultExtension,"w", encoding='utf-8')
-        # file.write(userName + "\n1\n" + userName + "\n/\n-1\n")
-        # file.write("1 #ff0000 Comment_1\n2 #00ff00 Comment_2")
-        # file.flush()
 
         self.users = [[userName, "/", -1]]
         self.currUser = self.users[0]
@@ -367,8 +334,6 @@ class Projects(object):
 
     def updateLastProject(self):
         file = open("settings","w", encoding='utf-8')
-        # file.write(self.projectPath)
-        # file.flush()
         json.dump(self.projectPath, file, indent=4)
         file.close
 
@@ -389,7 +354,6 @@ class Projects(object):
         self.masks_clean = [ (self.createMask(self.original_images[0].size) ) ]
         self.annotation = [(self.createAnnotation(self.original_images[0].size))]
             
-        #self.currImg = -1
         self.currImgID = 0
         self.users[ self.currUserID ][1] = self.imagePaths
         self.users[ self.currUserID ][2] = -1
@@ -403,8 +367,6 @@ class Projects(object):
             self.images = self.original_images
 
         self.resetImgScale()
-
-        #self.saveProject()
 
     def openBatch(self, tk_main, path = None):
         limpar = 1
@@ -459,8 +421,6 @@ class Projects(object):
 
         self.resetImgScale()
 
-        #self.saveProject()
-
         return limpar
 
     def clearImage(self):
@@ -471,16 +431,6 @@ class Projects(object):
             file = open(self.projectPath,"w", encoding='utf-8')
         else:
             file = open(path,"w", encoding='utf-8')
-
-        # file.write(self.currUser[0] + "\n%d\n" %(len(self.users)) )
-        #
-        # for i in range(len(self.users)):
-        #     file.write("%s\n%s\n%d\n" %( self.users[i][0], self.users[i][1], self.users[i][2] ) )
-        #
-        # for i in range(len(self.labels)):
-        #     file.write("%d %s %s\n" %( i+1, self.labels[i][1], self.labels[i][0] ) )
-        #
-        # file.flush()
 
         json.dump(self.__getstate__(), file, indent=4)
         file.close()
@@ -599,8 +549,6 @@ class Projects(object):
         return newImg
 
     def increaseImgScale(self):
-        # newScale = self.imgScale + self.scaleRate
-
         newScale = self.currScale + 1
 
         if( newScale >= len(self.imgScale)):
@@ -610,7 +558,6 @@ class Projects(object):
         return True
 
     def decreaseImgScale(self):
-        # newScale = self.imgScale - self.scaleRate
         newScale = self.currScale - 1
         if( newScale < 0):
             return False
@@ -639,9 +586,6 @@ class Projects(object):
                 for y in range(height):
                     label = img_temp[z].getpixel((x,y))
                     if(label > 0):
-                        # mudar_vizinhos(z,x,y,label, img_temp)
-                        # count[label-1] = count[label-1] + 1
-
                         array_temp = [ [z,x,y] ]
                         while len(array_temp) > 0:
                             z_t = array_temp[0][0]

@@ -68,12 +68,10 @@ class win_main(tkinter.Frame):
         createWin.grid_columnconfigure(0, minsize=50)
         createWin.grid_columnconfigure(3, minsize=50)
 
-        #btnNewProject = tkinter.Button(createWin, text="Create a new project", bg="green")
         btnNewProject = tkinter.Button(createWin, text="Create a new project")
         btnNewProject.grid(row=2, column=1)
         createWin.grid_rowconfigure(btnNewProject, minsize=50)
 
-        #btnOpenProject = tkinter.Button(createWin, text="Open a project", bg="red")
         btnOpenProject = tkinter.Button(createWin, text="Open a project")
         btnOpenProject.grid(row=4, column=1)
         createWin.grid_rowconfigure(btnOpenProject, minsize=50)
@@ -100,18 +98,6 @@ class win_main(tkinter.Frame):
 
         self.projects.loadSettings()
 
-        #listUsers = project[0:-1]
-        #listUsers.sort()
-        
-        '''
-        for expert in listUsers:
-            #self.users.append(expert.split("gt_")[1])
-            self.users.append(expert)
-
-            #if(recentProj[1] == self.users[-1]):
-            if(project[0] == self.users[-1]):
-                userSelection = len(self.users)-1
-        '''
         if( self.projects.sizeUsers()  > 1):
             self.createWin_choose()
         else:
@@ -119,14 +105,14 @@ class win_main(tkinter.Frame):
             self.loadComments()
             self.selectLb(None, 0)
             if( new ):
-                tkinter.messagebox.showinfo(message="Welcome %s" %(self.projects.getCurrUserName()) )
+                msg = "Welcome "
             else:
-                tkinter.messagebox.showinfo(message="Welcome back %s" %(self.projects.getCurrUserName()) )
+                msg = "Welcome back "
+            tkinter.messagebox.showinfo(message=msg + self.projects.getCurrUserName() )
                     
 
     def createWin_choose(self):
 
-        #tkinter.messagebox.showinfo(message="Opening Project: %s" %(self.dir.split(".neuronote")[0] ) )
         tkinter.messagebox.showinfo(message="Opening Project")
 
         topChooseWindow= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
@@ -160,9 +146,7 @@ class win_main(tkinter.Frame):
             chWin_radio[i].grid(row = i+1, column = 0, padx = 52)
 
         chWin_radio[ self.projects.currUserID ].select()
-        #self.user = var.get()
-
-        #chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10, bg = "green")
+        
         chWin_btnConfirm = tkinter.Button(chooseWindow, text="Confirm", padx=10)
         chWin_btnConfirm['command'] = lambda btn = topChooseWindow: self.confirmUser(btn)
         chWin_btnConfirm.grid(row = len(chWin_radio)+2, column = 0, padx = 52, pady = 10)
@@ -228,19 +212,13 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
             self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
 
-            #if(self.user == self.users[i]):
-                #self.User_radio[i].select()
         self.User_radio[ self.projects.getCurrUserID() ].select()
 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0, ipady=5)
-
-        #self.projects.loadAnnotation()
-        #self.paint()
 
     def rmUser(self,user):
         
@@ -256,7 +234,6 @@ class win_main(tkinter.Frame):
             self.User_radio[i].destroy()
             self.User_btnRm[i].destroy()
 
-        name = self.projects.getUserName(user)
         self.projects.removeUser(user)
 
         var = tkinter.IntVar()
@@ -270,22 +247,15 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red") )
             self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
-
-            '''
-            if(self.user[0] == self.users[i][0]):
-                #self.User_radio[i].select()
-                self.userID = i
-            '''
 
         self.User_radio[ self.projects.getCurrUserID() ].select()
                 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0)
 
-        tkinter.messagebox.showwarning("Warning", "Specialist " + name + " has been deleted.")
+        tkinter.messagebox.showwarning("Warning", "Specialist " + self.projects.getUserName(user) + " has been deleted.")
         
     def addUser(self):
         new = tkinter.simpledialog.askstring("New user", "Insert new user name:", parent = self.parent)
@@ -303,12 +273,6 @@ class win_main(tkinter.Frame):
 
         self.projects.addUser(new)
 
-        #print(self.users)
-        #self.users.sort(key=lambda name: name[0][0])
-        #self.users.sort()
-        #print("\n##########\n")
-        #print(self.users)
-        
         var = tkinter.IntVar()
 
         self.User_btnAdd.grid_remove()
@@ -320,16 +284,9 @@ class win_main(tkinter.Frame):
             self.User_radio[i]['command'] = lambda radio = var : self.userSelected(radio)
             self.User_radio[i].grid(row = i+1, column = 0)
 
-            #self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, bg = "red", command = self.rmUser) )
             self.User_btnRm.append(tkinter.Button(self.fUser, text="Remove", padx=3, command = self.rmUser) )
             self.User_btnRm[i]['command'] = lambda btn = i: self.rmUser(btn)
             self.User_btnRm[i].grid(row = i+1, column = 1)
-
-            '''
-            if( projects.isCurrUser ):
-                #self.User_radio[i].select()
-                projects.updateCurrUser(i)
-            '''
 
         self.User_radio[ self.projects.getCurrUserID() ].select()
                 
@@ -344,25 +301,7 @@ class win_main(tkinter.Frame):
             self.projects.updateCurrUser(var.get())
             self.loadUser()
             
-        '''
-        for i in range(0, len(self.users) ):
-            if(self.user == self.users[i]):
-                self.User_radio[i].select()
-        '''
         self.User_radio[ self.projects.getCurrUserID() ].select()
-
-    '''
-    def saveSettings(self):
-        return
-        file = open("settings","w")
-
-        file.write(self.dirImage + "\n")
-        file.write(self.dirStack + "\n")
-        file.write(self.dirLoadComments + "\n")
-        file.write(self.dirSaveComments + "\n")
-        file.write(self.dirLoadAnnotations + "\n")
-        file.write(self.dirSaveAnnotations + "\n")
-    '''
 
     def createMenu(self):
         self.top = self.winfo_toplevel()
@@ -378,14 +317,8 @@ class win_main(tkinter.Frame):
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
         self.mnuImage = tkinter.Menu(self.menuBar, tearoff=0)
-        #self.mnuImage.add_command(label="Open Image", state = "disabled", command=self.abrir)
         self.mnuImage.add_command(label="Open Image", command=self.abrir)
         self.mnuImage.add_command(label="Open Stack", command=self.abrirBatch)
-        #self.mnuImage.add_command(label="Save Annotation ", command=self.nada)
-        #self.mnuImage.add_command(label="Save Comments", state = "disabled", command=self.saveComments)
-        #self.mnuImage.add_command(label="Save Comments As", command=self.saveCommentsAs)
-        #self.mnuImage.add_command(label="Load Comments", command=self.loadComments)
-        #self.mnuImage.add_separator()
         
         self.menuBar.add_cascade(label="Image", menu=self.mnuImage)
  
@@ -395,9 +328,6 @@ class win_main(tkinter.Frame):
         self.mnuAnnotation.add_command(label="Export Count", command=self.exportCount)
         self.menuBar.add_cascade(label="Annotation", menu=self.mnuAnnotation)
 
-        #self.mnuConfigure = tkinter.Menu(self.menuBar, tearoff=0)
-        #self.mnuConfigure.add_command(label="Customize RoI", command=self.changeRoi)
-        #self.mnuConfigure.add_command(label="Select Gradient", command=self.changeGradient)
         self.menuBar.add_cascade(label="Configure", command=self.configure)
  
         mnuAjuda = tkinter.Menu(self.menuBar, tearoff=0)
@@ -408,18 +338,14 @@ class win_main(tkinter.Frame):
 
     def frameMain(self):
         self.fMain = tkinter.Frame(self.parent)
-        #self.fMain.grid(row=0, column = 0, stick='nw')
         self.fMain.grid(row=0, column = 0)
 
 
         self.parent.columnconfigure(0, weight=1, minsize=450)
-        #self.fMain.rowconfigure(0, weight=1)
-        #self.fMain.columnconfigure(0, weight=1)
 
         self.imgScrollVertical = tkinter.Scrollbar(self.fMain, orient="vertical")
         self.imgScrollHorizontal = tkinter.Scrollbar(self.fMain, orient="horizontal")
         self.canvas = tkinter.Canvas(self.fMain, highlightthickness=10, scrollregion=(0,0,100,100), xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
-        #self.canvas.config(bg="yellow")
 
         self.imgScrollVertical.config(command=self.canvas.yview)
         self.imgScrollHorizontal.config(command=self.canvas.xview)
@@ -427,20 +353,12 @@ class win_main(tkinter.Frame):
 
         self.imgScrollVertical.pack(side="right", fill="y")
         self.imgScrollHorizontal.pack(side="bottom", fill="x")
-        #998x665
-        #Somar 2 se qt pixel for par e somar 1 se qt de pixel for impar?
-        #self.canvas.create_image(self.photo.width()/2+2, self.photo.height()/2+1, image=self.photo, tags="imgTag")
         self.canvas.pack(fill='both', expand=True)
         
     def frameStatus(self):
         self.fStatus = tkinter.Frame(self.parent)
         self.fStatus.grid(row = 1, column = 0, stick='nswe', columnspan=2)
 
-        #self.fStatus.rowconfigure(0, weight=1)
-        #self.fStatus.columnconfigure(0, weight=1)
-        
-        #self.status = tkinter.Label(self.fStatus, text="X: -- \t Y: -- \t Z: -- / --", bd=1,relief='sunken', anchor='w', bg='red')
-        #self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w', bg='red')
         self.status = tkinter.Label(self.fStatus, text="", bd=1,relief='sunken', anchor='w')
         self.status.pack(side='bottom', fill='x')
 
@@ -448,7 +366,6 @@ class win_main(tkinter.Frame):
         self.status.y = -1
         
     def frameLabel(self):
-        #self.frameRight = tkinter.Frame(self.parent, bg= "orange")
         self.frameRight = tkinter.Frame(self.parent)
         self.frameRight.grid(row = 0, column = 1, stick='nswe', ipadx=5)
 
@@ -458,37 +375,23 @@ class win_main(tkinter.Frame):
         self.frameRight.columnconfigure(0, weight=1)
         self.frameRight.rowconfigure(1, weight=1, minsize=130)
                 
-        #self.frameLb = tkinter.Frame(self.frameRight, bg="pink")
         self.frameLb = tkinter.Frame(self.frameRight)
-        #self.fLabel = tkinter.Frame(self.lbCanvas, bg="green")
         self.frameLb.grid(row = 0, stick='nswe', ipadx=5)
 
-        #self.frameLb.rowconfigure(0, weight=1)
-        #self.frameLb.columnconfigure(0, weight=1)
-        
         self.lbScrollVertical = tkinter.Scrollbar(self.frameLb, orient="vertical")
         self.lbScrollHorizontal = tkinter.Scrollbar(self.frameLb, orient="horizontal")
-        #self.lbCanvas = tkinter.Canvas(self.frameLb, bg ="green", xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
         self.lbCanvas = tkinter.Canvas(self.frameLb, xscrollcommand=self.lbScrollHorizontal.set, yscrollcommand=self.lbScrollVertical.set, height=self.parent.winfo_screenheight()/2)#, width= 250)
         self.lbScrollVertical.config(command=self.lbCanvas.yview)
         self.lbScrollHorizontal.config(command=self.lbCanvas.xview)
 
-        #self.fLabel = tkinter.Frame(self.lbCanvas, bg="blue")
         self.fLabel = tkinter.Frame(self.lbCanvas)
         self.fLabel.pack(fill="both", expand=False)
-
-        #self.fLabel.rowconfigure(0, weight=1)
-        #self.fLabel.columnconfigure(0, weight=1)
 
         self.lbCanvas.create_window( 0,0, window=self.fLabel, anchor="nw")
         
         self.lbScrollVertical.pack(side="right", fill="y")
         self.lbScrollHorizontal.pack(side="bottom", fill="x")
         self.lbCanvas.pack(side="left", fill="both", expand=True)
-                
-        
-        #self.lbCanvas.config(scrollregion=self.lbCanvas.bbox("all"))
-        #self.lbCanvas.yview_moveto(0)
 
         self.lb_comment = []
         self.label = []
@@ -503,33 +406,22 @@ class win_main(tkinter.Frame):
 
         self.btn_addLb = tkinter.Button(self.fLabel, text="Insert Label", padx=3, command= self.addLb)
         self.btn_rmLb = tkinter.Button(self.fLabel, text="Remove Last Label", padx=3, state = "disabled", command= self.rmLb)
-        #self.btn_rmLb = tkinter.Button(self.fLabel, text="Remove Last Label", padx=3, command= self.rmLb)
 
         self.addLb()
         self.addLb()
         
-        #self.frameUser = tkinter.Frame(self.frameRight, bg="purple")
         self.frameUser = tkinter.Frame(self.frameRight)
         self.frameUser.grid(row = 1, stick='nswe', ipadx=5)
 
-        #self.frameUser.rowconfigure(0, weight=1)
-        #self.frameUser.columnconfigure(0, weight=1)
-
         self.userScrollVertical = tkinter.Scrollbar(self.frameUser, orient="vertical")
         self.userScrollHorizontal = tkinter.Scrollbar(self.frameUser, orient="horizontal")
-        #self.userCanvas = tkinter.Canvas(self.frameUser, bg ="pink", xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
         self.userCanvas = tkinter.Canvas(self.frameUser, xscrollcommand=self.userScrollHorizontal.set, yscrollcommand=self.userScrollVertical.set)#, width= 250)
         self.userScrollVertical.config(command=self.userCanvas.yview)
         self.userScrollHorizontal.config(command=self.userCanvas.xview)
 
-        #self.fUser = tkinter.Frame(self.userCanvas, bg="gray")
         self.fUser = tkinter.Frame(self.userCanvas)
         self.fUser.pack(fill="both", expand=False)
 
-        #self.fUser.rowconfigure(0, weight=1)
-        #self.fUser.columnconfigure(0, weight=1)
-
-        #120
         self.userCanvas.create_window( 0, 0, window=self.fUser, anchor="nw")
         
         self.userScrollVertical.pack(side="right", fill="y")
@@ -542,7 +434,6 @@ class win_main(tkinter.Frame):
         self.userTitle = tkinter.Label(self.fUser, text="Users:", padx=3)
         self.userTitle.grid(row=0, ipady = 10)
 
-        #self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, bg = "green", command = self.addUser)
         self.User_btnAdd = tkinter.Button(self.fUser, text="Insert specialist", padx=3, command = self.addUser)
 
     def commentLb(self, i):
@@ -566,7 +457,6 @@ class win_main(tkinter.Frame):
 
         if(i == 1):
             self.btn_rmLb.configure(state="normal")
-            #self.btn_rmLb.grid()
 
         if(load == None):
             self.lb_comment.append(tkinter.StringVar())
@@ -587,10 +477,6 @@ class win_main(tkinter.Frame):
         self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
         self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], padx=3, command=lambda:self.commentLb(i))
-        #self.label[i][1].bind("<Return>", self.lostFocus)
-        #self.label[i][1].bind("<Enter>", self.lostFocus)
-
-        #self.label[i][1] = tkinter.Label(self.fLabel, text=est_label[i][0], padx=3)
         self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
         self.label[i][2] = tkinter.Button(self.fLabel, text="Color", padx=3, bg=color)
@@ -604,10 +490,7 @@ class win_main(tkinter.Frame):
     def rmLb(self, flag = None):
 
         if( len(self.label) == 2) and (flag == None):
-            #tkinter.messagebox.showwarning("Warning", "You can't delete all the labels. You need at least one to work!")
-            #return
             self.btn_rmLb.configure(state="disabled")
-            #self.btn_rmLb.grid_remove()
 
         for i in range(3):
             self.label[-1][i].destroy()
@@ -622,10 +505,6 @@ class win_main(tkinter.Frame):
         self.canvas.shiftPress = False
         ##########
         #Image Bind
-        #self.canvas.tag_bind("imgTag", "<Button-1>", self.onClick)
-
-        #self.canvas.tag_bind("imgTag", "<Double-Button-1>", self.onClick)
-        #self.canvas.tag_bind("imgTag", "<Motion>", self.motion)
         self.canvas.tag_bind("maskTag", "<Button-1>", self.onClick)
         self.canvas.tag_bind("maskTag", "<Motion>", self.motion)
 
@@ -638,7 +517,6 @@ class win_main(tkinter.Frame):
 
         self.parent.bind("<F2>", self.showHideMask)
         self.parent.bind("<F3>", self.showHideGrad)
-        #print(self.canvas.bbox("imgTag"))
         ##########
 
         #Label Bind
@@ -657,9 +535,6 @@ class win_main(tkinter.Frame):
         self.parent.bind("<KP_Add>", self.zoom) #Linux - Numpad
         self.parent.bind("<KP_Subtract>", self.zoom) #Linux - Numpad
 
-        #self.canvas.tag_bind("imgTag", "<ButtonPress-3>", self.buttonPress)
-        #self.canvas.tag_bind("imgTag", "<B3-Motion>", self.buttonMove)
-        #self.canvas.tag_bind("imgTag", "<ButtonRelease-3>", self.buttonRelease)
         self.canvas.tag_bind("maskTag", "<Shift-ButtonPress-3>", self.buttonPress)
         self.canvas.tag_bind("maskTag", "<Shift-B3-Motion>", self.buttonMove)
 
@@ -670,32 +545,10 @@ class win_main(tkinter.Frame):
 
         self.canvas.shiftPress = True
 
-        # self.canvasAtualX = event.x
-        # self.canvasAtualY = event.y
-        #
-        # self.imgAtualX = self.canvas.canvasx(event.x)
-        # self.imgAtualY = self.canvas.canvasy(event.y)
-
-        #self.sumDeltaMov = [0,0]
-        
-        #self.canvas.scan_mark(self.canvasX, self.canvasY)
-
     def buttonRelease(self, event):
-        # self.canvasAtualX = 0
-        # self.canvasAtualY = 0
-        #
-        # self.dragX = self.dragX + self.dX;
-        # self.dragY = self.dragY + self.dY;
-
-        '''
-        self.canvas.deltaMov[0] = self.canvas.deltaMov[0] + self.sumDeltaMov[0]
-        self.canvas.deltaMov[1] = self.canvas.deltaMov[1] + self.sumDeltaMov[1]
-        #self.canvas.deltaMov[2] =  0
-        '''
         if(self.canvas.shiftPress):
             self.canvas.shiftPress = False
             return
-        #print("ainda passa aqui")
         tam = self.projects.WRADIUS
         coord_x = [max(0, int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) - tam[0]), min(self.projects.getDimensionCurrImg()[0], int(self.canvas.canvasx(event.x) / self.projects.getImgScale()) + tam[0]) ]
         coord_y = [max(0, int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) - tam[1]), min(self.projects.getDimensionCurrImg()[1], int(self.canvas.canvasy(event.y) / self.projects.getImgScale()) + tam[1]) ]
@@ -717,37 +570,11 @@ class win_main(tkinter.Frame):
 
         self.paint()
 
-        #print(self.dragY, self.dragX)
-
-        #self.atualX = 0;
-        #self.atualY = 0;
-
     def buttonMove(self, event):
-        # deltaX = event.x - self.canvasAtualX
-        # deltaY = event.y - self.canvasAtualY
-
-        # self.dX = self.canvas.canvasx(event.x) - self.imgAtualX
-        # self.dY = self.canvas.canvasy(event.y) - self.imgAtualY
-
-        # self.canvas.move("imgTag", deltaX, deltaY)
-        # self.canvas.move("maskTag", deltaX, deltaY)
-        #self.canvas.scan_dragto(event.x, event.y, gain=1);
-
         self.canvas.scan_dragto(event.x, event.y, gain=1)
-
-        '''
-        self.sumDeltaMov = [self.sumDeltaMov[0] + deltaX,
-                            self.sumDeltaMov[1] + deltaY]
-        self.canvas.isMov = True
-        '''
-
-        # self.canvasAtualX = event.x
-        # self.canvasAtualY = event.y
         
     def changeColor(self, btn, i = None):
         color = askcolor()
-
-        #print(color)
 
         if(color[1] == None):
             return
@@ -758,8 +585,6 @@ class win_main(tkinter.Frame):
 
     def refresh(self):
         self.canvas.delete("all")
-
-        # self.projects.resetImgScale()
 
         if(self.projects.getImgScale() != 1):
             self.redraw()
@@ -772,31 +597,14 @@ class win_main(tkinter.Frame):
         self.canvas.mask = self.projects.getCurrMask()
 
         tam = [ int(dimensionImg[0] / 2), int(dimensionImg[1] / 2) ]
-        # tam = [ dimensionImg[0] / 2, dimensionImg[1] / 2]
-        # if( (dimensionImg[0] % 2) > 0):
-        #     tam[0] = tam[0] + 1;
-        # if( (dimensionImg[1] % 2) > 0):
-        #     tam[1] = tam[1] + 1;
-
-        #self.canvas.mask = Image.new('RGBA', dimensionImg, (0,0,0,0))
-        #self.canvas.mask = ImageTk.PhotoImage(self.canvas.mask)
 
         self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
         self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
         self.canvas.pack(fill='both', expand=True)
 
-        # self.dragX = self.canvas.bbox("imgTag")[0];
-        # self.dragY = self.canvas.bbox("imgTag")[1];
-
         self.dX = 0
         self.dY = 0
-        '''
-        self.canvas.deltaMov = [0,0, 0]
-        self.canvas.isMov = False
-        '''
-
-        #print(self.canvas.bbox("imgTag"))
-
+        
         if( self.projects.isBatchImg() ):
             self.projects.updateUserImg()
 
@@ -816,36 +624,19 @@ class win_main(tkinter.Frame):
         self.canvas.mask = self.projects.getCurrMaskResize(size)
 
         tam = [ int(size[0] / 2), int(size[1] / 2)]
-        # if( (dimensionImg[0] % 2) > 0):
-        #     tam[0] = tam[0] + 1;
-        # if( (dimensionImg[1] % 2) > 0):
-        #     tam[1] = tam[1] + 1;
 
         self.canvas.config(width=size[0], height=size[1])
 
         self.canvas.imgID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.image, tags="imgTag")
         self.canvas.maskID = self.canvas.create_image(tam[0], tam[1], image=self.canvas.mask, tags="maskTag")
 
-        #self.dragX = self.canvas.bbox("imgTag")[0];
-        #self.dragY = self.canvas.bbox("imgTag")[1];
-
-        #print(self.canvas.bbox("imgTag"))
-
         self.dX = 0
         self.dY = 0
-        '''
-        self.canvas.isMov = False
-        self.canvas.deltaMov = [0,0, 0]
-        '''
 
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
-        #self.imgScrollVertical.config(command=self.canvas.yview)
-        #self.imgScrollHorizontal.config(command=self.canvas.xview)
         self.canvas.config(xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
 
-        #self.imgScrollVertical.pack(side="right", fill="y")
-        #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
 
         if(zoom):
@@ -888,40 +679,11 @@ class win_main(tkinter.Frame):
         self.canvas.itemconfigure(self.canvas.imgID, image=self.canvas.image)
         self.canvas.itemconfigure(self.canvas.maskID, image=self.canvas.mask)
 
-        #self.canvas.move("imgTag", self.dragX, self.dragY)
-        #self.canvas.move("maskTag", self.dragX, self.dragY)
-
-        #self.dragX = self.canvas.bbox("imgTag")[0];
-        #self.dragY = self.canvas.bbox("imgTag")[1];
-
-        #self.dX = 0
-        #self.dY = 0
-
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
-        #self.imgScrollVertical.config(command=self.canvas.yview)
-        #self.imgScrollHorizontal.config(command=self.canvas.xview)
         self.canvas.config(xscrollcommand=self.imgScrollHorizontal.set, yscrollcommand=self.imgScrollVertical.set)
 
-        #self.imgScrollVertical.pack(side="right", fill="y")
-        #self.imgScrollHorizontal.pack(side="bottom", fill="x")
         self.canvas.pack(fill='both', expand=True)
-
-
-        '''
-        if(self.canvas.isMov):
-            self.canvas.move("imgTag", self.canvas.deltaMov[0], self.canvas.deltaMov[1])
-            self.canvas.move("maskTag", self.canvas.deltaMov[0], self.canvas.deltaMov[1])
-            #self.delta[2] = self.canvas.delta[2] + 1
-
-            self.dragX = self.dragX + self.canvas.deltaMov[0];
-            self.dragY = self.dragY + self.canvas.deltaMov[1];
-            
-            #print(self.delta[2])
-        '''
-        
-        
-
         
 #########################################################################
 #            Menu Bar Functions
@@ -946,12 +708,10 @@ class win_main(tkinter.Frame):
         newWin_entUser = tkinter.Entry(createWin)
         newWin_entUser.grid(row = 1, column = 1)
 
-        #newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3, bg = "green")
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
         newWin_btnOK['command'] = lambda btn = [newWin_entProj, newWin_entUser, createWin]: self.newWinConfirm(btn)
         newWin_btnOK.grid(row = 3, column = 0)
         
-        #newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, bg = "red", command = createWin.destroy)
         newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
         newWin_btnCancel.grid(row = 3, column = 1)
         
@@ -969,10 +729,8 @@ class win_main(tkinter.Frame):
 
     def abrirProj(self):
         filedir = filedialog.askopenfilename(initialdir= self.projects.getAppPath() + "/Projects/",filetypes = [("NeuroNote Project", "*.neuronote")] )
-        #filedir = filedialog.askopenfilename(initialdir = "/Projects",filetypes = [("NeuroNote Project", "*.neuronote")] )
 
         if(len(filedir) > 0):
-            #self.dir = os.path.split(filedir)
             self.projects.updateProjectPath(filedir)
             
             self.loadSettings()
@@ -1000,18 +758,14 @@ class win_main(tkinter.Frame):
 
         self.projects.loadAnnotation()
         self.refresh()
-        #self.saveSettings()
         
     def abrirBatch(self, menu = True):
 
         if(menu):
             dirname = filedialog.askdirectory(initialdir= self.projects.lastImagePath)
-            #print(dirname)
 
             if(not dirname):
                 return
-
-        #images_ext = [".jpg",".gif",".png",".tiff"]
 
             limpar = self.projects.openBatch(self.parent, dirname)
             tkinter.messagebox.showwarning("Warning", "All images loaded.")
@@ -1021,8 +775,6 @@ class win_main(tkinter.Frame):
         if ( self.projects.sizeImages() > 0) and (limpar == 0):
             self.projects.loadAnnotation()
             self.refresh()
-
-        #self.saveSettings()
 
     def reset(self):
         self.projects.clearImage()
@@ -1054,20 +806,6 @@ class win_main(tkinter.Frame):
             tkinter.messagebox.showwarning("Warning", "Count exported.")
 
     def loadComments(self):
-
-        """
-        if(flag == None):
-            ini_dir = self.dirLoadComments.split("/")
-            del ini_dir[-1]
-            
-            res = filedialog.askopenfilename(initialdir= "/".join(ini_dir) + "/" ,filetypes = [ ("Text Files","*.txt") ] )
-        else:
-            res = self.dirLoadComments
-
-        file = open(res,"r")
-
-        lines = file.read().splitlines()
-        """
         
         self.btn_rmLb.configure(state="disabled")
 
@@ -1081,16 +819,6 @@ class win_main(tkinter.Frame):
         for i in range( self.projects.sizeLabels() ):
             self.addLb( self.projects.getLabels(i) )
 
-        #self.dirLoadComments = res
-
-        #self.saveSettings()
-        #file.close()
-
-        #self.mnuArquivo.entryconfig("Save Comments", state="normal")
-
-    def nada(self):
-        pass
-     
     def sobre(self):
         pass
 
@@ -1198,7 +926,6 @@ class win_main(tkinter.Frame):
         ans = tkinter.messagebox.askquestion("Quit", "Are you sure?", icon='warning')
 
         if ans == 'yes':
-            #self.destroy()
             self.parent.destroy()
 
         
@@ -1232,7 +959,6 @@ class win_main(tkinter.Frame):
 
         if(key == -1):
             key = 9
-        #print("Selecionado Label #%d" %(key) )
 
         if(key >= self.projects.sizeLabels()):
             return
@@ -1251,11 +977,6 @@ class win_main(tkinter.Frame):
         
     def onClick(self, event):
 
-        #print("######")
-
-        # x = self.canvas.canvasx(event.x) - self.dragX;
-        # y = self.canvas.canvasy(event.y) - self.dragY;
-
         if( (event.x < 10) or (event.y < 10)):
             return
 
@@ -1265,24 +986,9 @@ class win_main(tkinter.Frame):
         x = int(self.canvas.canvasx(event.x) / self.projects.getImgScale())
         y = int(self.canvas.canvasy(event.y) / self.projects.getImgScale())
 
-        #print(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
-        #print(self.dragX, self.dragY)
-        #print(self.canvas.coords("imgTag"))
-        #print(self.canvas.deltaMov)
-        #print(self.canvas.canvasx(self.delta[0]), self.canvas.canvasy(self.delta[1]))
-        #print(self.canvas.canvasx(self.delta[0]) - (self.delta[0]*self.delta[2]), self.canvas.canvasy(self.delta[1]) - (self.delta[1]*self.delta[2]))
-
-        '''
-        #Para corrigir coordenadas quando refaz o movimento ao pintar a imagem
-        if(self.mudanca):
-            x = x - (self.dragX*self.delta[2])
-            y = y - ( (self.dragY-2) * self.delta[2])
-        '''
-
         if( (x < 0) or (y < 0) ):
             return
 
-        #limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
         limite = [(self.canvas.bbox("imgTag")[2] / self.projects.getImgScale()) - 1, (self.canvas.bbox("imgTag")[3] / self.projects.getImgScale()) - 1]
         if( (x > limite[0]) or (y > limite[1]) ):
             return
@@ -1295,9 +1001,6 @@ class win_main(tkinter.Frame):
 
         colorRGB = tuple(int(colorHex.lstrip('#')[i:i+2], 16) for i in (0, 2 ,4))
 
-        #x = self.canvas.canvasx(event.x);
-        #y = self.canvas.canvasy(event.y);
-        
         print ("%d, %d" %(x, y) )
 
         mask = self.projects.getMask(self.projects.getCurrImgID())
@@ -1326,18 +1029,10 @@ class win_main(tkinter.Frame):
                 self.projects.setAnnotation(i, a)
             del(coord[0])
                 
-        '''
-        # self.projects.setImage(self.projects.getCurrImgID(),img)
-        self.projects.setMask(self.projects.getCurrImgID(), mask)
-        self.projects.setAnnotation(self.projects.getCurrImgID(), annotation)
-        '''
         progressBar.close()
         self.paint()
 
     def motion(self, event):
-
-        # x = (self.canvas.canvasx(event.x) - self.dragX) / self.projects.getImgScale()
-        # y = (self.canvas.canvasy(event.y) - self.dragY) / self.projects.getImgScale()
 
         if( (event.x < 10) or (event.y < 10)):
             return
@@ -1354,7 +1049,6 @@ class win_main(tkinter.Frame):
         if( (x < 0) or (y < 0) ):
             return
 
-        #limite = [self.canvas.bbox("imgTag")[2] - self.canvas.bbox("imgTag")[0] - 1, self.canvas.bbox("imgTag")[3] - self.canvas.bbox("imgTag")[1] -1 ]
         limite = [ (self.canvas.bbox("imgTag")[2] / self.projects.getImgScale()) - 1, (self.canvas.bbox("imgTag")[3] / self.projects.getImgScale()) - 1]
 
         if( (x > limite[0]) or (y > limite[1]) ):
@@ -1363,16 +1057,11 @@ class win_main(tkinter.Frame):
         self.status.x = x
         self.status.y = y
 
-        #x = self.canvas.canvasx(event.x);
-        #y = self.canvas.canvasy(event.y);
-
-        #print(self.canvas.bbox("imgTag"));
         tam = [ self.projects.WRADIUS[0] * self.projects.getImgScale(), self.projects.WRADIUS[1] * self.projects.getImgScale() ]
         self.canvas.coords(self.canvas.rect, self.canvas.canvasx(event.x)-tam[0], self.canvas.canvasy(event.y)-tam[1], self.canvas.canvasx(event.x)+tam[0], self.canvas.canvasy(event.y)+tam[1])
         self.canvas.itemconfigure(self.canvas.rect, outline = self.projects.WRADIUS[3])
         
         self.updateStatus()
-        #self.status.pack()
 
     def updateStatus(self):
         if (self.projects.isBatchImg()):
@@ -1381,8 +1070,6 @@ class win_main(tkinter.Frame):
             self.status.configure(text=("X: %d \t Y: %d \t\t Scale: %d%%" % (self.status.x, self.status.y, self.projects.getImgScale() * 100)))
 
     def moveImg(self, event):
-        #print(self.currImg)
-        #print(event)
         change = 0
         if (event.keysym == "Next") or (event.delta < 0) or (event.num == 5):
             if( self.projects.getCurrImgID()  > 0):
@@ -1392,7 +1079,6 @@ class win_main(tkinter.Frame):
             if self.projects.getCurrImgID() < self.projects.sizeImages()-1:
                 self.projects.updateCurrImg("add")
                 change = 1
-        #print(self.currImg)
         if change == 1:
             self.refresh()
 
@@ -1404,8 +1090,6 @@ class win_main(tkinter.Frame):
             res = self.projects.decreaseImgScale()
 
         if(res):
-            #self.dragX = 0;
-            #self.dragY = 0;
             self.redraw(True)
 
     def showHideMask(self, event):
@@ -1425,9 +1109,6 @@ if __name__ == "__main__":
     root.title('Teste')
 
     root.minsize(750,340)
-    
-    #root.geometry('1000x700') #ativado para testes
-    #root.resizable(width=False, height=False)
     
     app = win_main(root)
     app.mainloop()
