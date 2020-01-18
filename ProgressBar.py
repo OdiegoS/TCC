@@ -1,7 +1,7 @@
-from tkinter import *
-from tkinter.ttk import *
 import time
 import tkinter
+
+from tkinter.ttk import Progressbar
 
 class ProgressBar(object):
 
@@ -17,7 +17,7 @@ class ProgressBar(object):
         self.tk.focus_force()
         self.tk.attributes("-topmost", True)
 
-        self.progress=Progressbar(self.tk,orient=HORIZONTAL,length=100,mode='determinate')
+        self.progress=Progressbar(self.tk,orient=tkinter.HORIZONTAL,length=100,mode='determinate')
         self.progress.pack()
 
     def updatingBar(self, value):
@@ -44,7 +44,7 @@ class Loading(object):
         self.tk.focus_force()
         self.tk.attributes("-topmost", True)
 
-        self.progress=Progressbar(self.tk,orient=HORIZONTAL,length=100,mode='indeterminate')
+        self.progress=Progressbar(self.tk,orient=tkinter.HORIZONTAL,length=100,mode='indeterminate')
         self.progress.pack()
 
         self.start = time.time()

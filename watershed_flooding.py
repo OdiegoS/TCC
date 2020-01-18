@@ -1,21 +1,17 @@
-import numpy as np
-from PIL import Image
-from PIL import ImageFilter
-from PIL import ImageChops
-from imageio import imwrite
-import sys
-import time
 import cv2
 import operator
+import numpy as np
 import ProgressBar as pb
+
+from PIL import Image
 
 
 class Watershed(object):
-
+   
    def __init__(self):
-      self.kernel = np.ones((3,3), np.uint8)
-      self.kern_x = np.asanyarray(np.array([ [-1,0, 1],[-2,0,2],[-1,0,1] ]), np.float32)
-      self.kern_y = np.asanyarray(np.array([ [1, 2, 1],[0,0,0],[-1,-2,-1] ]), np.float32)
+      self.kernel = np.ones((3, 3), np.uint8)
+      self.kern_x = np.asanyarray(np.array([ [-1, 0, 1],[-2, 0, 2],[-1, 0, 1] ]), np.float32)
+      self.kern_y = np.asanyarray(np.array([ [1, 2, 1],[0, 0, 0],[-1, -2, -1] ]), np.float32)
       self.kernel_z = np.asanyarray(np.array([ [1, 2, 1],[2, 4, 2],[1, 2, 1] ]), np.float32)
 
    def sobel_grad(self, temp_img):
