@@ -71,12 +71,15 @@ class Projects(object):
         json.dump(self.__getstate__(), file, indent=4)
 
     def saveProject(self, path = None):
-        if path == None:
-            file = open(self.projectPath,"w", encoding='utf-8')
-        else:
-            file = open(path,"w", encoding='utf-8')
+        temp = self.projectPath
 
+        if path != None:
+            self.projectPath = path
+            
+        file = open(self.projectPath,"w", encoding='utf-8')
         json.dump(self.__getstate__(), file, indent=4)
+
+        self.projectPath = temp
         file.close()
 
     def openImage(self,  tk_main, path = None):
@@ -357,6 +360,12 @@ class Projects(object):
 
     def getAppPath(self):
         return self.appPath
+
+    def getProjectName(self):
+        name = (self.projectPath.replace("\\", "/")).split("/")[-1]
+        name = (name.split("."))[:-1]
+        name = "".join(name)
+        return name
 
     def getQtdImage(self):
         return len(self.images)

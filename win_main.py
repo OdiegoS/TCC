@@ -17,8 +17,9 @@ class win_main(tkinter.Frame):
 
     def __init__(self,parent):
         tkinter.Frame.__init__(self,parent)
-        
+
         self.parent = parent
+        self.parent.protocol('WM_DELETE_WINDOW', self.sair)
 
         self.projects = Projects()
         
@@ -72,7 +73,7 @@ class win_main(tkinter.Frame):
         self.mnuAnnotation.add_command(label="Clear Annotation", command=self.reset)
         self.mnuAnnotation.add_command(label="Save Annotation", command=self.saveAnnotation)
         self.mnuAnnotation.add_command(label="Export Count", command=self.exportCount)
-        self.menuBar.add_cascade(label="Annotation", menu=self.mnuAnnotation)
+        self.menuBar.add_cascade(label="Annotation", menu=self.mnuAnnotation, state="disabled")
 
         self.menuBar.add_cascade(label="Configure", command=self.configure)
  
@@ -82,7 +83,7 @@ class win_main(tkinter.Frame):
 
         self.top.config(menu=self.menuBar)
 
-    def createProj(self):
+    def createProj(self, menu = True, win_parent = None):
         createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
         createWin.title("New Project")
         centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
@@ -102,32 +103,58 @@ class win_main(tkinter.Frame):
         newWin_entUser.grid(row = 1, column = 1)
 
         newWin_btnOK = tkinter.Button(createWin, text="Confirm", padx=3)
-        newWin_btnOK['command'] = lambda btn = [newWin_entProj, newWin_entUser, createWin]: self.newWinConfirm(btn)
+        newWin_btnOK['command'] = lambda btn = [newWin_entProj, newWin_entUser, createWin, win_parent]: self.newWinConfirm(btn)
         newWin_btnOK.grid(row = 3, column = 0)
-        
-        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3, command = createWin.destroy)
+
+        if(not menu):
+            createWin.protocol('WM_DELETE_WINDOW', self.sair)
+        if(win_parent != None):
+            createWin.protocol('WM_DELETE_WINDOW', lambda prot = [createWin, menu, win_parent]: self.newWinCancel(prot))
+
+        newWin_btnCancel = tkinter.Button(createWin, text="Cancel", padx=3)
+        newWin_btnCancel['command'] = lambda btn = [createWin, menu, win_parent]: self.newWinCancel(btn)
         newWin_btnCancel.grid(row = 3, column = 1)
         
     def newWinConfirm(self, info):
         if( (len(info[0].get().replace(" ", "") ) == 0) or (len(info[1].get().replace(" ", "") ) == 0) ):
             tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a name in the field before proceeding.")
+            if(info[3] != None):
+                info[3].focus_force()
+                info[3].grab_set()
+                info[2].focus_force()
+                info[2].grab_set()
             return
 
         self.projects.newProject(info[0].get(), info[1].get())
 
         info[2].destroy()
 
+        if(info[3] != None):
+            info[3].destroy()
+
         self.loadSettings(True)
 
+    def newWinCancel(self, info):
 
-    def abrirProj(self):
+        if(info[1]):
+            info[0].destroy()
+            if(info[2] != None):
+                info[2].focus_force()
+                info[2].grab_set()
+        else:
+            self.sair()
+
+
+    def abrirProj(self, win_parent = None):
         filedir = filedialog.askopenfilename(initialdir= self.projects.getAppPath() + "/Projects/",filetypes = [("NeuroNote Project", "*.neuronote")] )
 
         if(len(filedir) > 0):
             self.projects.setProjectPath(filedir)
-            
+
+            if(win_parent != None):
+                win_parent.destroy()
+
             self.loadSettings()
-        return
 
     def saveProject(self):
         self.projects.saveProject()
@@ -138,6 +165,9 @@ class win_main(tkinter.Frame):
 
         res = filedialog.asksaveasfilename(defaultextension=".neuronote", filetypes = ( ("Neuronote Files","*.neuronote"),
                                                          ("All Files", "*.*") ) )
+        if(not res):
+            return
+
         self.projects.saveProject(res)
         tkinter.messagebox.showwarning("Warning", "Project saved.")
 
@@ -287,7 +317,7 @@ class win_main(tkinter.Frame):
         else:
             resp = self.projects.configure(int(newWin_entX.get()), int(newWin_entY.get()), int(newWin_entZ.get()), newWin_btnColor.cget('bg'), newWin_op.get())
 
-        if(resp):
+        if(resp and (self.projects.getQtdImage() > 0) ):
             if(self.projects.changeGradient(self.parent)):
                 self.refresh()
 
@@ -380,11 +410,11 @@ class win_main(tkinter.Frame):
         self.label = []
         self.labelTitle = []
 
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='raised', padx=3, border=0))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Label", relief='flat', padx=3, border=0))
         self.labelTitle[0].grid(row=0, column = 0, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comments", relief='raised', padx=3, border=0))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Comments", relief='flat', padx=3, border=0))
         self.labelTitle[1].grid(row=0, column = 1, ipady=10)
-        self.labelTitle.append(tkinter.Label(self.fLabel, text="Mark Color", relief='raised', padx=3,border=0))
+        self.labelTitle.append(tkinter.Label(self.fLabel, text="Mark Color", relief='flat', padx=3,border=0))
         self.labelTitle[2].grid(row=0, column = 2, ipady=10)
 
         self.btn_addLb = tkinter.Button(self.fLabel, text="Insert Label", padx=3, command= self.addLb)
@@ -441,14 +471,14 @@ class win_main(tkinter.Frame):
 
             color = load[1]
 
-        self.label[i][0] = tkinter.Button(self.fLabel, text="%d" %(i+1), padx=3)
+        self.label[i][0] = tkinter.Button(self.fLabel, text="%d" %(i+1), relief="flat", padx=3)
         self.label[i][0]['command'] = lambda : self.selectLb(None, i)
         self.label[i][0].grid(row=i+1, column = 0, ipady=5)
 
-        self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], padx=3, command=lambda:self.commentLb(i))
+        self.label[i][1] = tkinter.Button(self.fLabel, textvariable=self.lb_comment[i], relief="flat", padx=3, command=lambda:self.commentLb(i))
         self.label[i][1].grid(row=i+1, column = 1, ipady=5)
 
-        self.label[i][2] = tkinter.Button(self.fLabel, text="Color", padx=3, bg=color)
+        self.label[i][2] = tkinter.Button(self.fLabel, text="Color", relief="flat", padx=3, bg=color)
         self.label[i][2]['command'] = lambda : self.changeColor(self.label[i][2], i)
         self.label[i][2].grid(row=i+1, column = 2, ipady=5)
         
@@ -470,6 +500,10 @@ class win_main(tkinter.Frame):
         self.projects.setLabelComment(i, comment)
 
     def rmLb(self, flag = None):
+
+        if( (flag == None) and (len(self.label) == (self.projects.getSelectedLb()+1) ) ):
+            tkinter.messagebox.showwarning("Warning", "You cannot remove a selected label!!\n")
+            return
 
         if( len(self.label) == 2) and (flag == None):
             self.btn_rmLb.configure(state="disabled")
@@ -532,7 +566,7 @@ class win_main(tkinter.Frame):
 
         if( self.projects.isCurrUser(var.get()) ):
             return
-        ans = tkinter.messagebox.askquestion("Warning", "Are you sure about changing user?", icon = "warning")
+        ans = tkinter.messagebox.askquestion("Warning", "Are you sure about changing user?\nAll alterations not saved will be lost!", icon = "warning")
         if(ans == "yes"):
             self.projects.setCurrUser(var.get())
             self.loadUser()
@@ -552,10 +586,12 @@ class win_main(tkinter.Frame):
             else:
                 self.abrir(False)
         else:
-            self.parent.title("Teste")
+            self.parent.title(self.projects.getProjectName())
             self.status.configure(text=(""))
             self.canvas.delete("imgTag")
             self.canvas.delete("maskTag")
+            self.canvas.delete("rect")
+
 
         for i in range(0, len(self.User_radio) ):
             self.User_radio[i].destroy()
@@ -594,6 +630,7 @@ class win_main(tkinter.Frame):
             self.User_radio[i].destroy()
             self.User_btnRm[i].destroy()
 
+        userName = self.projects.getUserName(user)
         self.projects.removeUser(user)
 
         var = tkinter.IntVar()
@@ -615,7 +652,7 @@ class win_main(tkinter.Frame):
                 
         self.User_btnAdd.grid(row = len(self.User_radio)+2, column = 0)
 
-        tkinter.messagebox.showwarning("Warning", "Specialist " + self.projects.getUserName(user) + " has been deleted.")
+        tkinter.messagebox.showwarning("Warning", "Specialist " + userName + " has been deleted.")
 
 
 ################################################################################################
@@ -689,12 +726,12 @@ class win_main(tkinter.Frame):
 
         print ("%d, %d" %(x, y) )
 
-        mask = self.projects.getMask(self.projects.getCurrImgID())
-        annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
+        # mask = self.projects.getMask(self.projects.getCurrImgID())
+        # annotation = self.projects.getAnnotation(self.projects.getCurrImgID())
 
         tam = self.projects.getWradius()
 
-        progressBar = pb.Loading(self.parent)
+        progressBar = pb.ProgressBar(self.parent, "loading")
 
         coord = self.projects.applyWatershed([x,y], progressBar)
 
@@ -857,12 +894,11 @@ class win_main(tkinter.Frame):
         
         if( not self.projects.isProjectExist() ):
             tkinter.messagebox.showwarning("Warning", "There is no project yet.\nPlease, click in OK and create a new project.")
-            self.createProj()
+            self.createProj(False)
             return
         self.loadSettings()
 
     def loadSettings(self, new = False):
-
         if (not self.projects.isRecentProjectExist()):
             tkinter.messagebox.showwarning("Warning", "Recent project not found.\nPlease, click in OK and create a new project or open an existing project.")
             self.chooseAction()
@@ -891,6 +927,7 @@ class win_main(tkinter.Frame):
         createWin.resizable(width=False, height=False)
         createWin.focus_force()
         createWin.grab_set()
+        createWin.protocol('WM_DELETE_WINDOW', self.sair)
 
         createWin.grid_columnconfigure(0, minsize=50)
         createWin.grid_columnconfigure(3, minsize=50)
@@ -909,11 +946,9 @@ class win_main(tkinter.Frame):
     def choooseActionEvent(self, param):
 
         if(param[1]):
-            self.createProj()
+            self.createProj(True, param[0])
         else:
-            self.abrirProj()
-
-        param[0].destroy()
+            self.abrirProj(param[0])
     
     def createWin_choose(self):
 
@@ -1029,7 +1064,9 @@ class win_main(tkinter.Frame):
         self.updateStatus()
         self.parent.title("Teste (%s)" %self.projects.getPathCurrImg() )
         tam = [ self.projects.getWradius()[0] * self.projects.getImgScale(), self.projects.getWradius()[1] * self.projects.getImgScale() ]
-        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = self.projects.getWradius()[3])
+        self.canvas.rect = self.canvas.create_rectangle(self.status.x-tam[0], self.status.y-tam[1], self.status.x+tam[0], self.status.y+tam[1], outline = self.projects.getWradius()[3], tags="rect")
+
+        self.menuBar.entryconfig("Annotation", state="normal")
 
     def redraw(self, zoom = False):
         self.canvas.delete("all")
@@ -1084,7 +1121,7 @@ class win_main(tkinter.Frame):
         tam = [ self.projects.getWradius()[0] * self.projects.getImgScale(), self.projects.getWradius()[1] * self.projects.getImgScale() ]
         rec_x = self.status.x * self.projects.getImgScale()
         rec_y = self.status.y * self.projects.getImgScale()
-        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = self.projects.getWradius()[3])
+        self.canvas.rect = self.canvas.create_rectangle(rec_x-tam[0],  rec_y-tam[1], rec_x+tam[0],  rec_y+tam[1], outline = self.projects.getWradius()[3], tags="rect")
 
     def paint(self):
 
@@ -1115,7 +1152,7 @@ if __name__ == "__main__":
     root = tkinter.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
-    root.title('Teste')
+    root.title('Neuronote')
 
     root.minsize(750,340)
     
