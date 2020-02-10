@@ -14,6 +14,7 @@ class ProgressBar(object):
         self.tk.geometry('+%d+%d' %(centralized[0], centralized[1]) )
         self.tk.minsize(width=100, height=20)
         self.tk.resizable(width=False, height=False)
+        self.tk.wait_visibility()
         self.tk.grab_set()
         self.tk.focus_force()
         self.tk.attributes("-topmost", True)
@@ -24,7 +25,7 @@ class ProgressBar(object):
         self.start = time.time()
 
     def updatingBar(self, value = None):
-        if(self.action == 'loading'):
+        if(self.action == 'watershed'):
             diff = time.time() - self.start
             if(diff > 0.1):
                 self.count += 10

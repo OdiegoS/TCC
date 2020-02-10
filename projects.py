@@ -4,7 +4,7 @@ import os
 import json
 import operator
 import numpy as np
-import ProgressBar as pb
+import progressBar as pb
 
 from PIL import Image
 from PIL import ImageTk

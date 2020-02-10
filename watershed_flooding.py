@@ -1,7 +1,7 @@
 import cv2
 import operator
 import numpy as np
-import ProgressBar as pb
+import progressBar as pb
 
 from PIL import Image
 

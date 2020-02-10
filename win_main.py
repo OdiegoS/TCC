@@ -2,7 +2,7 @@
 
 import tkinter
 import numpy as np
-import ProgressBar as pb
+import progressBar as pb
 
 from tkinter import filedialog
 from tkinter import colorchooser
@@ -60,6 +60,8 @@ class win_main(tkinter.Frame):
         self.mnuProject.add_command(label="Save Project",  command=self.saveProject)
         self.mnuProject.add_command(label="Save Project As", command=self.saveProjectAs)
         self.mnuProject.add_separator()
+        self.mnuProject.add_command(label="Configure", command=self.configure)
+        self.mnuProject.add_separator()
         self.mnuProject.add_command(label="Quit", command=self.sair)
         self.menuBar.add_cascade(label="Project", menu=self.mnuProject)
 
@@ -75,10 +77,9 @@ class win_main(tkinter.Frame):
         self.mnuAnnotation.add_command(label="Export Count", command=self.exportCount)
         self.menuBar.add_cascade(label="Annotation", menu=self.mnuAnnotation, state="disabled")
 
-        self.menuBar.add_cascade(label="Configure", command=self.configure)
- 
         mnuAjuda = tkinter.Menu(self.menuBar, tearoff=0)
         mnuAjuda.add_command(label="About", command=self.sobre)
+        mnuAjuda.add_command(label="Keyboard Shortcuts", command=self.shortcuts)
         self.menuBar.add_cascade(label="Help", menu=mnuAjuda)
 
         self.top.config(menu=self.menuBar)
@@ -90,6 +91,7 @@ class win_main(tkinter.Frame):
         createWin.geometry('+%d+%d' %(centralized[0], centralized[1]) )
         createWin.resizable(width=False, height=False)
         createWin.focus_force()
+        createWin.wait_visibility()
         createWin.grab_set()
 
         newWin_lbProj = tkinter.Label(createWin, text="Project Name: ")
@@ -120,8 +122,10 @@ class win_main(tkinter.Frame):
             tkinter.messagebox.showwarning("Warning", "A field name has been left blank.\nEnter a name in the field before proceeding.")
             if(info[3] != None):
                 info[3].focus_force()
+                info[3].wait_visibility()
                 info[3].grab_set()
                 info[2].focus_force()
+                info[2].wait_visibility()
                 info[2].grab_set()
             return
 
@@ -140,6 +144,7 @@ class win_main(tkinter.Frame):
             info[0].destroy()
             if(info[2] != None):
                 info[2].focus_force()
+                info[2].wait_visibility()
                 info[2].grab_set()
         else:
             self.sair()
@@ -237,6 +242,24 @@ class win_main(tkinter.Frame):
     def sobre(self):
         pass
 
+    def shortcuts(self):
+        createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
+        createWin.title("List of keyboard shortcuts")
+        centralized = [ (self.parent.winfo_screenwidth() // 2) - 175, (self.parent.winfo_screenheight() // 2) - 55 ]
+        createWin.geometry('+%d+%d' %(centralized[0], centralized[1]) )
+        createWin.minsize(width=270, height=150)
+        createWin.resizable(width=False, height=False)
+        createWin.focus_force()
+        createWin.wait_visibility()
+        createWin.grab_set()
+
+        text = "Left Click -> marks a region \n Mouse Scroll Wheel or Page Up / Down -> switch to the next or previous image \n F2 -> show or hide image markings \n F3 -> show or hide image gradient \n Numeric Keys -> select a label \n Plus and Minus Key -> zoom in / zoom out \n Shift + Holding Right Click + Drag -> drag the image"
+        createWin.lb = tkinter.Label(createWin, text=text)
+        createWin.lb.grid(row = 0)
+
+        createWin.btn = tkinter.Button(createWin, text="Confirm", command = createWin.destroy)
+        createWin.btn.grid(row = 1)
+
     def configure(self):
         createWin= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
         createWin.title("Insert new Values")
@@ -245,6 +268,7 @@ class win_main(tkinter.Frame):
         createWin.minsize(width=270, height=150)
         createWin.resizable(width=False, height=False)
         createWin.focus_force()
+        createWin.wait_visibility()
         createWin.grab_set()
 
         value_padx = (15,0)
@@ -731,7 +755,7 @@ class win_main(tkinter.Frame):
 
         tam = self.projects.getWradius()
 
-        progressBar = pb.ProgressBar(self.parent, "loading")
+        progressBar = pb.ProgressBar(self.parent, "watershed")
 
         coord = self.projects.applyWatershed([x,y], progressBar)
 
@@ -926,6 +950,7 @@ class win_main(tkinter.Frame):
         createWin.minsize(100,100)
         createWin.resizable(width=False, height=False)
         createWin.focus_force()
+        createWin.wait_visibility()
         createWin.grab_set()
         createWin.protocol('WM_DELETE_WINDOW', self.sair)
 
@@ -956,9 +981,12 @@ class win_main(tkinter.Frame):
 
         topChooseWindow= tkinter.Toplevel(self.parent, borderwidth=4, relief='ridge' )
         topChooseWindow.title("Who are you?")
+        topChooseWindow.minsize(240,100)
         topChooseWindow.resizable(width=False, height=False)
+        topChooseWindow.wait_visibility()
         topChooseWindow.focus_force()
         topChooseWindow.grab_set()
+        topChooseWindow.protocol('WM_DELETE_WINDOW', self.sair)
 
         self.canvasWin = tkinter.Canvas(topChooseWindow)
         chooseWindow = tkinter.Frame(self.canvasWin)
@@ -1031,6 +1059,10 @@ class win_main(tkinter.Frame):
 
         for i in range( self.projects.getQtdLabel() ):
             self.addLb( self.projects.getLabels(i) )
+
+        self.label[self.projects.getSelectedLb()][0].configure(relief='solid')
+        self.label[self.projects.getSelectedLb()][1].configure(relief='solid')
+        self.label[self.projects.getSelectedLb()][2].configure(relief='solid')
 
 ################################################################################################
 ########                                                                                ########
