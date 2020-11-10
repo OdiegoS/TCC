@@ -11,46 +11,50 @@ from PIL import ImageTk
 from watershed_flooding import Watershed
 from copy import deepcopy
 
-
 class Projects(object):
 
     def __init__(self):
 
-        self.IMG_SCALE = [0.125, 0.25, 0.5, 1, 2, 4, 8]
-
         self.watershed = Watershed()
+        
+        self.IMG_SCALE = [0.125, 0.25, 0.5, 1, 2, 4, 8] # lista com as escalas disponíveis para zoom in/out
+        self.currScale = self.IMG_SCALE.index(1) # salva o index onde a escala 1 está
 
+        self.appPath = os.path.dirname(os.path.realpath(__file__)) # diretório onde o programa está localizado
         self.defaultPath = "Projects/"
         self.defaultExtension = ".neuronote"
-        self.wradius = [50, 50, 2, "#000000"]
+        
+        self.wradius = [50, 50, 2, "#000000"] #configuração da região de interesse
         self.grad = "Morphological"
         self.sobel3_peso = 1/16
-        self.currScale = self.IMG_SCALE.index(1)
-        self.appPath = os.path.dirname(os.path.realpath(__file__))
-
-        self.labels = None
-        self.users = None
-        self.currUser = None
-        self.currUserID = None
-        self.currImgID = 0
-        self.masks = []
-        self.masks_clean = []
-        self.annotation = []
-        self.images = []
-        self.original_images = []
-        self.gradient_images = []
-        self.imagePaths = None
-        self.imagePath = None
-        self.projectPath = None
-        self.lastImagePath = None
-        self.lastBatchPath = None
-        self.selectedLb = -1
-        self.clean = False
-        self.grad_show = False
         
-        self.createSettingsFile()
-        self.createProjectsDir()
-        self.openSettings()
+        # Declarações de variáveis utilizadas pelo programa com valores vazios
+        self.imagePaths = None # Diretório das imagens carregadas
+        self.projectPath = None # Diretório do projeto atual
+        self.lastImagePath = None # Salva o diretório da última imagem carregada
+        self.lastBatchPath = None # Salva o diretório onde o último conjunto de imagens foram carregadas
+
+        self.labels = None # Lista com as informações dos rótulos do projeto atual da aplicação
+        self.selectedLb = -1 # Guarda a informação de qual rótulo está sendo utilizado no momento
+        self.users = None # Lista com as informações dos usuários do projeto atual da aplicação
+        self.currUser = None # Contem as informações do usuário atual da aplicação
+        self.currUserID = None # Contem o index do usuário atual da aplicação
+        
+        self.masks = [] # Lista com as máscaras das imagens onde é armazenado as marcações em RGB
+        self.masks_clean = [] # Lista com as máscaras das imagens em sua forma original
+        self.annotation = [] # Lista com as máscaras das imagens onde é armazenado as marcações em escala de cinza contendo apenas o index do rótulo
+
+        self.images = [] # Lista com as imagens utilizadas para exibição
+        self.currImgID = 0 # Contêm o index da imagem atual sendo exibida na aplicação
+        self.original_images = [] # Lista contendo as imagens carregadas
+        self.gradient_images = [] # Lista contendo os gradientes das imagens carregadas
+       
+        self.clean = False # Flag para definir se exibe para o usuário a imagem limpa ou com as marcações
+        self.grad_show = False # Flag para definir se exibe para o usuário a imagem original ou gradiente
+        
+        self.createSettingsFile() # Verifica existência e cria um arquivo de configuração para a aplicação
+        self.createProjectsDir() # Verifica existência e cria um diretório de projetos para a aplicação
+        self.openSettings() # Carrega o arquivo de configuração
 
 ################################################################################################
 ########                               Create Menu                                      ########
